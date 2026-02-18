@@ -64,7 +64,8 @@ power-workflow-next/
 | Phase 1 | 基础框架 | 30% | 可渲染的画布 + 三种节点 + 基础连线 |
 | Phase 2 | 节点编辑系统 | 25% | 完整的编辑面板 + 表单校验 |
 | Phase 3 | 画布交互增强 | 25% | 自动布局 + 撤销重做 + 右键菜单 |
-| Phase 4 | 视图模式与增强 | 15% | 状态展示 + 运行动画 + 小地图 |
+| Phase 4a | 视图模式核心 | 10% | 状态展示 + 运行动画 + Tooltip |
+| Phase 4b | 增强功能 | 5% | 小地图 + 节点搜索 |
 | Phase 5 | 文档与发布 | 5% | 文档 + 示例 + npm 发布 |
 
 ---
@@ -121,11 +122,13 @@ power-workflow-next/
 | NestedWorkflowNode 组件 | 嵌套工作流节点，矩形，带特殊图标 | 复用 JobNode 结构，仅图标不同 |
 | 节点样式实现 | 背景色、边框、阴影、选中/Hover 状态 | 使用 Tailwind 类名 + CSS 变量 |
 | 节点图标 | 齿轮、层叠方块图标（可使用 Lucide React） | 图标尺寸 16px，颜色 `#6B7280` |
+| 节点名称 Tooltip | 名称超过 14 字符时，hover 显示完整名称 | 使用 `@radix-ui/react-tooltip`，延迟 0.5 秒，最大宽度 300px |
 
 **注意事项**：
 - 菱形节点的锚点位置需特殊处理（四角而非四边中点）
 - 节点名称超长截断逻辑：14 字符，超出显示 "..."
 - 选中状态使用 `box-shadow` 实现蓝色外边框，不改变节点尺寸
+- Tooltip 样式与视图模式执行详情 Tooltip 保持一致
 
 #### 2.2.4 连线组件开发
 
@@ -178,6 +181,15 @@ power-workflow-next/
 - 默认语言为 `zh-CN`
 - 文案与 spec.md §10.3 保持一致
 
+#### 2.2.8 单元测试
+
+| 任务 | 说明 | 关键技术点 |
+|------|------|-----------|
+| 节点渲染测试 | 验证三种节点类型正确渲染 | 使用 React Testing Library |
+| 连线渲染测试 | 验证基础连线和分支线样式 | 检查 DOM 结构和样式类 |
+| 菱形节点锚点测试 | 验证锚点位置计算正确 | 断言坐标值 |
+| 国际化测试 | 验证中英文切换正常 | 切换 locale 后检查文案 |
+
 ### 2.3 技术风险
 
 | 风险 | 影响 | 缓解措施 |
@@ -192,6 +204,8 @@ power-workflow-next/
 - **M1.2**：三种节点可正确渲染
 - **M1.3**：节点可拖拽，锚点可连线
 - **M1.4**：模式切换和国际化完成
+- **M1.5**：节点名称超长 Tooltip 正常显示
+- **M1.6**：基础单元测试通过
 
 ---
 
@@ -299,7 +313,12 @@ const validators = {
     try { JSON.parse(value); return true; }
     catch { return 'JSON 格式错误'; }
   },
-  condition: (value) => /[!=<>]/.test(value) || '条件表达式格式错误',
+  // 判断条件校验：支持变量引用 + 比较操作符
+  condition: (value) => {
+    // 支持的操作符：==, !=, >=, <=, >, <, contains, startsWith, endsWith
+    const pattern = /\$\{[^}]+\}\s*(==|!=|>=|<=|>|<|contains|startsWith|endsWith)/i;
+    return pattern.test(value) || '条件表达式格式错误，必须包含变量引用和比较操作符';
+  },
 };
 ```
 
@@ -355,6 +374,15 @@ const validators = {
 - 使用 `useImperativeHandle` 暴露方法给父组件
 - Ref 类型定义需与 spec.md §11.4.6 保持一致
 
+#### 3.2.7 单元测试
+
+| 任务 | 说明 | 关键技术点 |
+|------|------|-----------|
+| 字段校验测试 | 验证必填、长度、格式校验规则 | 边界值测试 |
+| 判断条件校验测试 | 验证条件表达式校验器 | 测试各种操作符 |
+| JSON 格式校验测试 | 验证有效/无效 JSON 的识别 | 测试边界情况 |
+| 保存流程测试 | 验证校验 → 确认 → 保存流程 | 模拟用户操作 |
+
 ### 3.3 组件交互流程
 
 ```
@@ -397,6 +425,7 @@ const validators = {
 - **M2.3**：字段级校验实时生效
 - **M2.4**：保存流程（校验 → 确认 → 保存）完整可用
 - **M2.5**：Ref API 可正常调用
+- **M2.6**：校验规则单元测试通过
 
 ---
 
@@ -613,6 +642,105 @@ Ctrl+V
 - 切换操作支持撤销
 - 视图模式下禁用切换
 
+#### 4.2.7 工作流级校验触发
+
+| 任务 | 说明 | 关键技术点 |
+|------|------|-----------|
+| 循环依赖检测 | 检测工作流中是否存在闭环 | 使用 DFS 或拓扑排序算法 |
+| 判断节点出口检测 | 检测判断节点是否缺少出口连线 | 遍历节点检查边的存在性 |
+| 触发时机 | `getData()` / `exportToJSON()` 调用时执行 | 在方法返回前执行校验 |
+| 校验反馈 | Toast 提示校验失败信息 | 使用 toast 组件展示 |
+
+**循环依赖检测算法**：
+
+```typescript
+function detectCycle(nodes: Node[], edges: Edge[]): string | null {
+  const graph = new Map<string, string[]>();
+
+  // 构建邻接表
+  edges.forEach(edge => {
+    if (!graph.has(edge.source)) graph.set(edge.source, []);
+    graph.get(edge.source)!.push(edge.target);
+  });
+
+  // DFS 检测环
+  const visited = new Set<string>();
+  const recursionStack = new Set<string>();
+
+  function dfs(nodeId: string): boolean {
+    visited.add(nodeId);
+    recursionStack.add(nodeId);
+
+    const neighbors = graph.get(nodeId) || [];
+    for (const neighbor of neighbors) {
+      if (!visited.has(neighbor)) {
+        if (dfs(neighbor)) return true;
+      } else if (recursionStack.has(neighbor)) {
+        return true; // 发现环
+      }
+    }
+
+    recursionStack.delete(nodeId);
+    return false;
+  }
+
+  for (const node of nodes) {
+    if (!visited.has(node.id)) {
+      if (dfs(node.id)) {
+        return '工作流中存在循环依赖，请检查连线';
+      }
+    }
+  }
+
+  return null;
+}
+```
+
+**注意事项**：
+- 校验失败时仍返回数据，但同时触发 `onValidationError` 回调
+- 孤立节点不校验，允许存在
+
+#### 4.2.8 导入导出错误处理
+
+| 任务 | 说明 | 关键技术点 |
+|------|------|-----------|
+| 导入格式校验 | 校验 JSON 格式和数据结构 | try-catch + schema 校验 |
+| 版本兼容检查 | 检查导入数据的版本兼容性 | 比较 version 字段 |
+| 导入确认弹窗 | 导入前显示二次确认 | Modal 组件，提示"将覆盖当前画布" |
+| 错误提示 | 导入失败时显示具体错误 | Toast 提示错误原因 |
+
+**导入校验流程**：
+
+```
+选择文件
+    ↓
+读取 JSON 内容
+    ↓
+┌─ JSON 解析失败 → Toast: "JSON 格式错误：{详情}"
+│
+├─ 数据结构校验失败 → Toast: "数据格式不兼容"
+│
+├─ 版本不兼容 → Toast: "数据版本不兼容，当前支持 v{x}"
+│
+└─ 校验通过 → 显示确认弹窗
+                    ↓
+              用户确认 → 覆盖当前画布
+              用户取消 → 保持不变
+```
+
+**注意事项**：
+- 导出时自动添加版本号字段：`{ version: '1.0', nodes: [...], edges: [...] }`
+- 导入时需校验 nodes 和 edges 数组的基本结构
+
+#### 4.2.9 单元测试
+
+| 任务 | 说明 | 关键技术点 |
+|------|------|-----------|
+| 撤销重做测试 | 验证 50 步限制、连续操作 | 边界值测试 |
+| 循环依赖检测测试 | 验证各种环路的检测 | 单环、多环、自环 |
+| 判断节点出口检测测试 | 验证无出口检测 | 各种节点组合 |
+| 导入导出测试 | 验证格式校验、版本检查 | 正常/异常数据 |
+
 ### 4.3 工具栏实现
 
 | 按钮 | 功能 | 实现要点 |
@@ -659,21 +787,22 @@ Ctrl+V
 - **M3.5**：复制粘贴（含多选）正常工作
 - **M3.6**：连线 property 切换功能完成
 - **M3.7**：工具栏所有按钮可用
+- **M3.8**：工作流级校验（循环依赖、出口检测）正常触发
+- **M3.9**：导入导出错误处理完整
+- **M3.10**：Phase 3 单元测试通过
 
 ---
 
-## 第五章：Phase 4 - 视图模式与增强功能
+## 第五章：Phase 4a - 视图模式核心功能
 
 ### 5.1 阶段目标
 
-实现视图模式的完整功能，包括运行状态展示、运行动画、Tooltip 详情、小地图和节点搜索筛选。
+实现视图模式的核心功能，包括运行状态展示、运行动画和执行详情 Tooltip。
 
 **验收标准**：
 - ✅ 视图模式正确展示节点状态（颜色、图标）
 - ✅ 运行中节点显示呼吸动画
 - ✅ 悬停节点显示执行详情 Tooltip
-- ✅ 小地图可正常导航
-- ✅ 节点搜索/筛选功能可用
 - ✅ 视图模式工具栏仅显示视图控制按钮
 
 ### 5.2 任务清单
@@ -778,75 +907,7 @@ Ctrl+V
 - Tooltip 位置自动调整，避免超出视口
 - 错误信息过长时截断并显示省略号
 
-#### 5.2.4 小地图（Minimap）
-
-| 任务 | 说明 | 关键技术点 |
-|------|------|-----------|
-| 集成 React Flow Minimap | 使用内置 `<MiniMap />` 组件 | 放置在画布右下角 |
-| 节点颜色 | 根据节点类型或状态显示不同颜色 | 使用 `nodeColor` 属性 |
-| 尺寸配置 | 默认 200×150px | 通过 `style` 属性设置 |
-| 交互 | 点击跳转，拖拽视口平移 | React Flow 内置支持 |
-
-**Minimap 配置**：
-
-```tsx
-<MiniMap
-  nodeColor={(node) => {
-    switch (node.data.status) {
-      case 5: return '#52C41A'; // 成功 - 绿色
-      case 4: return '#FF4D4F'; // 失败 - 红色
-      case 3: return '#1890FF'; // 运行中 - 蓝色
-      case 1: return '#FFA940'; // 等待中 - 橙色
-      default: return '#E5E7EB'; // 默认 - 灰色
-    }
-  }}
-  style={{
-    width: 200,
-    height: 150,
-    backgroundColor: '#F9FAFB',
-  }}
-  maskColor="rgba(0, 0, 0, 0.1)"
-/>
-```
-
-**注意事项**：
-- 小地图可通过配置项禁用
-- 节点少于 3 个时可不显示小地图（优化体验）
-- 小地图位置可通过 CSS 调整
-
-#### 5.2.5 节点搜索/筛选
-
-| 任务 | 说明 | 关键技术点 |
-|------|------|-----------|
-| 搜索输入框 | 工具栏或独立面板中的搜索框 | 实时搜索，无需按回车 |
-| 搜索范围 | 节点名称、任务 ID、实例 ID | 支持模糊匹配 |
-| 高亮匹配 | 匹配的节点高亮显示 | 添加高亮边框或背景色 |
-| 定位功能 | 点击搜索结果跳转到对应节点 | 调用 `setViewport` 或 `fitView` |
-| 筛选面板 | 可选：按状态筛选节点 | 下拉菜单或标签页 |
-
-**搜索实现**：
-
-```typescript
-function searchNodes(nodes: Node[], query: string): Node[] {
-  const lowerQuery = query.toLowerCase();
-  return nodes.filter(node => {
-    const name = node.data.nodeName?.toLowerCase() || '';
-    const jobId = String(node.data.jobId || '');
-    const instanceId = String(node.data.instanceId || '');
-
-    return name.includes(lowerQuery)
-      || jobId.includes(lowerQuery)
-      || instanceId.includes(lowerQuery);
-  });
-}
-```
-
-**注意事项**：
-- 搜索框在工具栏的"缩放控制"右侧
-- 无匹配结果时显示提示"未找到匹配节点"
-- 清空搜索框恢复所有节点显示
-
-#### 5.2.6 视图模式工具栏
+#### 5.2.4 视图模式工具栏
 
 视图模式下工具栏仅保留视图控制按钮：
 
@@ -854,8 +915,8 @@ function searchNodes(nodes: Node[], query: string): Node[] {
 |------|------|
 | 适应视图 | 撤销/重做 |
 | 缩放控制（- / 100% / +） | 自动布局 |
-| 搜索框 | 添加节点 |
-| 小地图开关（可选） | 导入/导出 |
+| 搜索框（Phase 4b） | 添加节点 |
+| 小地图开关（可选，Phase 4b） | 导入/导出 |
 
 **条件渲染逻辑**：
 
@@ -872,7 +933,6 @@ function searchNodes(nodes: Node[], query: string): Node[] {
 {/* 两种模式都显示 */}
 <ToolbarButton icon="⊡" onClick={fitView} />
 <ZoomControl />
-<SearchInput />
 ```
 
 ### 5.3 状态刷新机制
@@ -910,6 +970,25 @@ useEffect(() => {
 | `onNodeDoubleClick` | 双击节点时 | `(event, node)` |
 | `onSelectionChange` | 选中状态变化时 | `({ nodes, edges })` |
 
+**视图模式点击跳转示例**：
+
+```tsx
+// 点击节点跳转到实例详情页
+const handleNodeClick = (event: React.MouseEvent, node: Node) => {
+  if (mode === 'view' && node.data.instanceId) {
+    // 跳转到实例详情页
+    navigate(`/instance/${node.data.instanceId}`);
+  }
+};
+
+<WorkflowNext
+  mode="view"
+  nodes={nodes}
+  edges={edges}
+  onNodeClick={handleNodeClick}
+/>
+```
+
 **注意事项**：
 - 视图模式点击节点不打开编辑面板
 - 可通过 `onNodeClick` 回调跳转到实例详情页
@@ -925,18 +1004,130 @@ useEffect(() => {
 
 ### 5.6 里程碑检查点
 
-- **M4.1**：视图模式节点状态正确显示
-- **M4.2**：运行中节点呼吸动画正常
-- **M4.3**：Tooltip 悬停显示正确
-- **M4.4**：小地图正常工作
-- **M4.5**：节点搜索/筛选功能完成
-- **M4.6**：视图模式工具栏按钮正确
+- **M4a.1**：视图模式节点状态正确显示
+- **M4a.2**：运行中节点呼吸动画正常
+- **M4a.3**：Tooltip 悬停显示正确
+- **M4a.4**：视图模式工具栏按钮正确
 
 ---
 
-## 第六章：Phase 5 - 文档与发布
+## 第六章：Phase 4b - 增强功能
 
 ### 6.1 阶段目标
+
+实现画布增强功能，包括小地图导航和节点搜索筛选。
+
+**验收标准**：
+- ✅ 小地图可正常导航
+- ✅ 节点搜索/筛选功能可用
+- ✅ 搜索结果高亮并支持定位
+
+### 6.2 任务清单
+
+#### 6.2.1 小地图（Minimap）
+
+| 任务 | 说明 | 关键技术点 |
+|------|------|-----------|
+| 集成 React Flow Minimap | 使用内置 `<MiniMap />` 组件 | 放置在画布右下角 |
+| 节点颜色 | 根据节点类型或状态显示不同颜色 | 使用 `nodeColor` 属性 |
+| 尺寸配置 | 默认 200×150px | 通过 `style` 属性设置 |
+| 交互 | 点击跳转，拖拽视口平移 | React Flow 内置支持 |
+
+**Minimap 配置**：
+
+```tsx
+<MiniMap
+  nodeColor={(node) => {
+    switch (node.data.status) {
+      case 5: return '#52C41A'; // 成功 - 绿色
+      case 4: return '#FF4D4F'; // 失败 - 红色
+      case 3: return '#1890FF'; // 运行中 - 蓝色
+      case 1: return '#FFA940'; // 等待中 - 橙色
+      default: return '#E5E7EB'; // 默认 - 灰色
+    }
+  }}
+  style={{
+    width: 200,
+    height: 150,
+    backgroundColor: '#F9FAFB',
+  }}
+  maskColor="rgba(0, 0, 0, 0.1)"
+/>
+```
+
+**注意事项**：
+- 小地图可通过配置项禁用
+- 节点少于 3 个时可不显示小地图（优化体验）
+- 小地图位置可通过 CSS 调整
+
+#### 6.2.2 节点搜索/筛选
+
+| 任务 | 说明 | 关键技术点 |
+|------|------|-----------|
+| 搜索输入框 | 工具栏中的搜索框 | 实时搜索，无需按回车 |
+| 搜索范围 | 节点名称、任务 ID、实例 ID | 支持模糊匹配 |
+| 高亮匹配 | 匹配的节点高亮显示 | 添加高亮边框或背景色 |
+| 定位功能 | 点击搜索结果跳转到对应节点 | 调用 `setViewport` 或 `fitView` |
+| 筛选面板 | 可选：按状态筛选节点 | 下拉菜单或标签页 |
+
+**搜索实现**：
+
+```typescript
+function searchNodes(nodes: Node[], query: string): Node[] {
+  const lowerQuery = query.toLowerCase();
+  return nodes.filter(node => {
+    const name = node.data.nodeName?.toLowerCase() || '';
+    const jobId = String(node.data.jobId || '');
+    const instanceId = String(node.data.instanceId || '');
+
+    return name.includes(lowerQuery)
+      || jobId.includes(lowerQuery)
+      || instanceId.includes(lowerQuery);
+  });
+}
+```
+
+**高亮与定位实现**：
+
+```typescript
+// 高亮匹配节点
+const highlightNodes = (nodes: Node[], matchedIds: Set<string>): Node[] => {
+  return nodes.map(node => ({
+    ...node,
+    className: matchedIds.has(node.id) ? 'node-highlighted' : 'node-dimmed',
+  }));
+};
+
+// 定位到指定节点
+const locateNode = (nodeId: string) => {
+  const node = nodes.find(n => n.id === nodeId);
+  if (node) {
+    setViewport({
+      x: -node.position.x + width / 2,
+      y: -node.position.y + height / 2,
+      zoom: 1,
+    });
+  }
+};
+```
+
+**注意事项**：
+- 搜索框在工具栏的"缩放控制"右侧
+- 无匹配结果时显示提示"未找到匹配节点"
+- 清空搜索框恢复所有节点显示
+- 高亮样式：边框变为蓝色 `#3B82F6`，非匹配节点降低透明度
+
+### 6.3 里程碑检查点
+
+- **M4b.1**：小地图正常工作
+- **M4b.2**：节点搜索/筛选功能完成
+- **M4b.3**：搜索结果高亮与定位正常
+
+---
+
+## 第七章：Phase 5 - 文档与发布
+
+### 7.1 阶段目标
 
 完成项目文档、示例代码编写，并通过 npm 发布正式版本。
 
@@ -948,9 +1139,9 @@ useEffect(() => {
 - ✅ npm 包可正常安装和使用
 - ✅ CHANGELOG 记录版本变更
 
-### 6.2 任务清单
+### 7.2 任务清单
 
-#### 6.2.1 README 文档
+#### 7.2.1 README 文档
 
 | 任务 | 说明 | 关键内容 |
 |------|------|----------|
@@ -991,7 +1182,7 @@ MIT
 - 提供英文版 README.en.md（可选）
 - 截图/动图需展示真实效果，避免过度美化
 
-#### 6.2.2 API 文档
+#### 7.2.2 API 文档
 
 | 任务 | 说明 | 关键内容 |
 |------|------|----------|
@@ -1039,7 +1230,7 @@ MIT
 - 每个属性提供使用示例
 - 复杂类型提供完整 TypeScript 定义
 
-#### 6.2.3 示例代码
+#### 7.2.3 示例代码
 
 | 任务 | 说明 | 关键内容 |
 |------|------|----------|
@@ -1068,7 +1259,7 @@ examples/
 - 使用注释说明关键步骤
 - 在线演示需定期维护，确保可用
 
-#### 6.2.4 TypeScript 类型定义
+#### 7.2.4 TypeScript 类型定义
 
 | 任务 | 说明 | 关键技术点 |
 |------|------|-----------|
@@ -1105,7 +1296,7 @@ export type { WorkflowNextRef };
 - 类型注释使用 JSDoc 格式
 - 确保 `package.json` 中 `types` 字段正确指向类型文件
 
-#### 6.2.5 构建配置
+#### 7.2.5 构建配置
 
 | 任务 | 说明 | 关键配置 |
 |------|------|----------|
@@ -1165,7 +1356,7 @@ export default defineConfig({
 }
 ```
 
-#### 6.2.6 npm 发布
+#### 7.2.6 npm 发布
 
 | 任务 | 说明 | 关键步骤 |
 |------|------|----------|
@@ -1197,7 +1388,7 @@ export default defineConfig({
 - 预发布版本使用 `-beta.1` 等后缀
 - 发布后更新 GitHub Release
 
-#### 6.2.7 CHANGELOG
+#### 7.2.7 CHANGELOG
 
 | 任务 | 说明 | 格式要求 |
 |------|------|----------|
@@ -1229,7 +1420,7 @@ export default defineConfig({
 - 不兼容旧版 power-workflow API
 ```
 
-### 6.3 交付物清单
+### 7.3 交付物清单
 
 | 交付物 | 文件/位置 | 状态 |
 |--------|-----------|------|
@@ -1241,7 +1432,7 @@ export default defineConfig({
 | 在线演示 | CodeSandbox 链接 | ⬜ |
 | CHANGELOG | `CHANGELOG.md` | ⬜ |
 
-### 6.4 发布后维护
+### 7.4 发布后维护
 
 | 任务 | 说明 |
 |------|------|
@@ -1250,7 +1441,7 @@ export default defineConfig({
 | 文档更新 | 持续完善文档和示例 |
 | 依赖更新 | 定期更新依赖版本，修复安全漏洞 |
 
-### 6.5 里程碑检查点
+### 7.5 里程碑检查点
 
 - **M5.1**：README 文档完成
 - **M5.2**：API 文档完成
