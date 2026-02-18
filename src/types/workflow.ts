@@ -14,13 +14,20 @@ export enum NodeStatus {
   STOPPED = 10,
 }
 
+export interface ExecutionInfo {
+  duration?: number;
+  startTime?: string;
+  endTime?: string;
+  error?: string;
+}
+
 export interface WorkflowNodeData extends Record<string, unknown> {
   label: string;
   type: NodeType;
   status?: NodeStatus;
   instanceId?: string;
-  
-  // Specific fields
+  execution?: ExecutionInfo;
+
   jobId?: string | number;
   enable?: boolean;
   skip?: boolean;
@@ -39,17 +46,20 @@ export interface WorkflowEdgeData extends Record<string, unknown> {
 
 export type WorkflowEdge = Edge<WorkflowEdgeData>;
 
-export interface WorkflowNextProps extends Omit<ReactFlowProps<WorkflowNode, WorkflowEdge>, 'nodes' | 'edges' | 'onNodesChange' | 'onEdgesChange' | 'onConnect'> {
+export interface WorkflowNextProps extends Omit<
+  ReactFlowProps<WorkflowNode, WorkflowEdge>,
+  'nodes' | 'edges' | 'onNodesChange' | 'onEdgesChange' | 'onConnect'
+> {
   nodes?: WorkflowNode[];
   edges?: WorkflowEdge[];
   mode?: 'edit' | 'view';
   defaultLocale?: 'zh-CN' | 'en-US';
-  
-  onNodesChange?: (changes: any) => void; 
-  onEdgesChange?: (changes: any) => void;
-  onConnect?: (connection: any) => void;
+
+  onNodesChange?: (changes: unknown) => void;
+  onEdgesChange?: (changes: unknown) => void;
+  onConnect?: (connection: unknown) => void;
   onNodeDataChange?: (nodeId: string, data: WorkflowNodeData) => void;
-  onValidationError?: (errors: any[]) => void;
+  onValidationError?: (errors: unknown[]) => void;
 }
 
 export type WorkflowMode = 'edit' | 'view';

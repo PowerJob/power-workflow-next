@@ -1,0 +1,45 @@
+@keyframes breathing {
+  0%, 100% {
+    border-color: #1890FF;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.3);
+  }
+  50% {
+    border-color: #69C0FF;
+    box-shadow: 0 0 0 4px rgba(24, 144, 255, 0.5);
+  }
+}
+
+.node-running {
+  animation: breathing 2s ease-in-out infinite;
+  will-change: border-color, box-shadow;
+}
+
+.node-highlighted {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5) !important;
+}
+
+.node-dimmed {
+  opacity: 0.4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .node-running {
+    animation: none;
+  }
+}
+  50% {
+    border-color: #69c0ff;
+    box-shadow: 0 0 0 4px rgba(24, 144, 255, 0.5);
+  }
+}
+
+.node-running {
+  animation: breathing 2s ease-in-out infinite;
+  will-change: border-color, box-shadow;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .node-running {
+    animation: none;
+  }
+}
