@@ -41,6 +41,23 @@ export const zhCN = {
   'workflow.panel.confirmSave': '保存时存在警告，是否继续保存？',
   'workflow.panel.continue': '继续保存',
   'workflow.panel.close': '关闭',
+  'workflow.context.addJob': '添加任务节点',
+  'workflow.context.addDecision': '添加判断节点',
+  'workflow.context.addNested': '添加嵌套工作流',
+  'workflow.context.paste': '粘贴',
+  'workflow.context.edit': '编辑',
+  'workflow.context.copy': '复制',
+  'workflow.context.delete': '删除',
+  'workflow.layout.horizontal': '横向布局',
+  'workflow.layout.vertical': '纵向布局',
+  'workflow.search.placeholder': '搜索节点...',
+  'workflow.search.noResults': '未找到匹配节点',
+  'workflow.import.confirm': '导入将覆盖当前画布内容，是否继续？',
+  'workflow.import.error.format': 'JSON 格式错误',
+  'workflow.import.error.version': '数据版本不兼容',
+  'workflow.cycle.error': '工作流中存在循环依赖',
+  'workflow.export.success': '导出成功',
+  'workflow.minimap.toggle': '小地图',
 };
 
 export type LocaleKey = keyof typeof zhCN;
