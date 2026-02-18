@@ -1,0 +1,207 @@
+import { useState, useEffect, useCallback } from 'react';
+import { FormGroup, TextInput, NumberInput, Toggle, CodeEditor } from '.';
+import { WorkflowNodeData } from '../../../types/workflow';
+import { useLocale } from '../../../hooks/useLocale';
+import {
+  ValidationRule,
+  nodeName,
+  positiveInteger,
+  range,
+  json,
+  Severity,
+} from '../../../utils/validation';
+
+interface JobNodeFormProps {
+  data: WorkflowNodeData;
+  onChange: (data: WorkflowNodeData) => void;
+  onValidationChange: (errors: Record<string, string>, warnings: Record<string, string>) => void;
+}
+
+interface FormData {
+  label: string;
+  jobId: string | number;
+  enable: boolean;
+  skip: boolean;
+  timeout: number;
+  params: string;
+}
+
+const validationRules: Record<string, ValidationRule[]> = {
+  label: [{ validator: nodeName }],
+  jobId: [{ validator: positiveInteger }],
+  timeout: [
+    { validator: range(0, 3600) },
+    {
+      validator: (v: unknown) => (Number(v) > 300 ? 'workflow.validation.timeoutWarning' : true),
+      severity: 'warning' as Severity,
+    },
+  ],
+  params: [{ validator: json }],
+};
+
+export const JobNodeForm = ({ data, onChange, onValidationChange }: JobNodeFormProps) => {
+  const { t } = useLocale();
+
+  const [formData, setFormData] = useState<FormData>({
+    label: data.label || '',
+    jobId: data.jobId ?? '',
+    enable: data.enable ?? true,
+    skip: data.skip ?? false,
+    timeout: data.timeout ?? 0,
+    params: data.params ?? '',
+  });
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [warnings, setWarnings] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    setFormData({
+      label: data.label || '',
+      jobId: data.jobId ?? '',
+      enable: data.enable ?? true,
+      skip: data.skip ?? false,
+      timeout: data.timeout ?? 0,
+      params: data.params ?? '',
+    });
+  }, [data]);
+
+  const validateField = useCallback(
+    (field: string, value: unknown): { error?: string; warning?: string } => {
+      const rules = validationRules[field];
+      if (!rules) return {};
+
+      let error: string | undefined;
+      let warning: string | undefined;
+
+      for (const rule of rules) {
+        const result = rule.validator(value);
+        if (result !== true && result !== null) {
+          const message = t(result);
+          if (rule.severity === 'warning') {
+            warning = message;
+          } else {
+            error = message;
+            break;
+          }
+        }
+      }
+
+      return { error, warning };
+    },
+    [t],
+  );
+
+  const handleChange = useCallback(
+    (field: keyof FormData, value: unknown) => {
+      const newFormData = { ...formData, [field]: value };
+      setFormData(newFormData);
+
+      const { error, warning } = validateField(field, value);
+      setErrors((prev) => {
+        const next = { ...prev };
+        if (error) next[field] = error;
+        else delete next[field];
+        return next;
+      });
+      setWarnings((prev) => {
+        const next = { ...prev };
+        if (warning) next[field] = warning;
+        else delete next[field];
+        return next;
+      });
+
+      onChange({
+        ...data,
+        label: newFormData.label,
+        jobId: newFormData.jobId,
+        enable: newFormData.enable,
+        skip: newFormData.skip,
+        timeout: newFormData.timeout,
+        params: newFormData.params,
+      });
+    },
+    [formData, data, validateField, onChange],
+  );
+
+  const handleBlur = useCallback((field: keyof FormData) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+  }, []);
+
+  useEffect(() => {
+    onValidationChange(errors, warnings);
+  }, [errors, warnings, onValidationChange]);
+
+  return (
+    <div className="space-y-1">
+      <FormGroup
+        label={t('workflow.panel.name')}
+        required
+        error={touched.label ? errors.label : undefined}
+      >
+        <TextInput
+          value={formData.label}
+          onChange={(e) => handleChange('label', e.target.value)}
+          onBlur={() => handleBlur('label')}
+          placeholder={t('workflow.panel.name')}
+          error={!!errors.label && touched.label}
+        />
+      </FormGroup>
+
+      <FormGroup label={t('workflow.panel.jobId')} error={touched.jobId ? errors.jobId : undefined}>
+        <NumberInput
+          value={formData.jobId || ''}
+          onChange={(e) => handleChange('jobId', e.target.value ? Number(e.target.value) : '')}
+          onBlur={() => handleBlur('jobId')}
+          placeholder="1001"
+          min={1}
+          error={!!errors.jobId && touched.jobId}
+        />
+      </FormGroup>
+
+      <FormGroup label={t('workflow.panel.enable')}>
+        <Toggle
+          checked={formData.enable}
+          onChange={(e) => handleChange('enable', e.target.checked)}
+        />
+      </FormGroup>
+
+      <FormGroup label={t('workflow.panel.skip')}>
+        <Toggle checked={formData.skip} onChange={(e) => handleChange('skip', e.target.checked)} />
+      </FormGroup>
+
+      <FormGroup
+        label={t('workflow.panel.timeout')}
+        error={touched.timeout ? errors.timeout : undefined}
+        warning={touched.timeout && !errors.timeout ? warnings.timeout : undefined}
+      >
+        <NumberInput
+          value={formData.timeout || ''}
+          onChange={(e) => handleChange('timeout', e.target.value ? Number(e.target.value) : 0)}
+          onBlur={() => handleBlur('timeout')}
+          placeholder="60"
+          min={0}
+          max={3600}
+          error={!!errors.timeout && touched.timeout}
+          warning={!!warnings.timeout && touched.timeout && !errors.timeout}
+        />
+      </FormGroup>
+
+      <FormGroup
+        label={t('workflow.panel.params')}
+        error={touched.params ? errors.params : undefined}
+      >
+        <CodeEditor
+          value={formData.params}
+          onChange={(value) => handleChange('params', value)}
+          onBlur={() => handleBlur('params')}
+          placeholder='{"key": "value"}'
+          height={150}
+          error={!!errors.params && touched.params}
+        />
+      </FormGroup>
+    </div>
+  );
+};
+
+export default JobNodeForm;
