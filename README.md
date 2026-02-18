@@ -1,73 +1,100 @@
-# React + TypeScript + Vite
+# power-workflow-next
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+基于 React Flow 的 PowerJob 工作流可视化组件，用于替代基于 @antv/g6 的旧版工作流编辑器。
 
-Currently, two official plugins are available:
+## 特性
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **三种节点类型**：任务节点（JOB）、判断节点（DECISION）、嵌套工作流节点（NESTED_WORKFLOW）
+- **画布能力**：拖拽节点、连线、编辑/查看模式切换、缩放限制（25%–200%）
+- **连线样式**：基础灰色连线、分支线（true/false 绿色/红色 + Y/N 标签）、选中高亮
+- **国际化**：中英文（zh-CN / en-US），默认中文
+- **技术栈**：React 18、TypeScript 5、Vite 7、@xyflow/react 12、Tailwind CSS 3
 
-## React Compiler
+## 环境要求
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Node.js >= 18.0.0
+- npm / pnpm / yarn
 
-## Expanding the ESLint configuration
+## 快速开始
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+```bash
+# 安装依赖
+npm install
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+# 启动开发服务器
+npm run dev
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+# 构建
+npm run build
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# 预览构建产物
+npm run preview
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 脚本说明
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+| 命令 | 说明 |
+|------|------|
+| `npm run dev` | 启动 Vite 开发服务器 |
+| `npm run build` | TypeScript 检查 + Vite 生产构建 |
+| `npm run preview` | 本地预览 dist 产物 |
+| `npm run lint` | 运行 ESLint |
+| `npx vitest run` | 运行 Vitest 单元测试 |
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## 项目结构
+
 ```
+power-workflow-next/
+├── src/
+│   ├── components/       # 组件
+│   │   ├── WorkflowCanvas/  # 画布主组件
+│   │   ├── nodes/           # 节点（Job / Decision / NestedWorkflow）
+│   │   └── edges/            # 自定义连线
+│   ├── contexts/         # React Context（如国际化）
+│   ├── hooks/             # 自定义 Hooks
+│   ├── types/             # TypeScript 类型
+│   ├── locales/           # 国际化文案（zh-CN、en-US）
+│   ├── App.tsx             # 示例入口
+│   └── main.tsx
+├── docs/                  # 文档（实现计划、规格说明）
+├── package.json
+├── vite.config.ts
+├── tailwind.config.js
+└── tsconfig.json
+```
+
+## 使用示例
+
+在应用中使用画布组件（需自行管理 `nodes` / `edges` 状态）：
+
+```tsx
+import { addEdge, useNodesState, useEdgesState } from '@xyflow/react';
+import WorkflowCanvas from './components/WorkflowCanvas';
+import { NodeType } from './types/workflow';
+
+const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+const onConnect = (params) => setEdges((eds) => addEdge(params, eds));
+
+<WorkflowCanvas
+  nodes={nodes}
+  edges={edges}
+  onNodesChange={onNodesChange}
+  onEdgesChange={onEdgesChange}
+  onConnect={onConnect}
+  mode="edit"
+  defaultLocale="zh-CN"
+/>
+```
+
+## 开发计划
+
+详见 [docs/plan.md](docs/plan.md)。当前已完成 **Phase 1 - 基础框架**；后续阶段包括节点编辑面板、自动布局、撤销重做、视图模式、小地图与发布等。
+
+## License
+
+MIT
+
+---
+
+作者：Echo009
