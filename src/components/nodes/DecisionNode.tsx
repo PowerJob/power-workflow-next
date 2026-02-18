@@ -1,0 +1,40 @@
+import { memo } from 'react';
+import { Handle, Position, NodeProps } from '@xyflow/react';
+import { WorkflowNode, NodeStatus } from '../../types/workflow';
+import { useLocale } from '../../hooks/useLocale';
+import { clsx } from 'clsx';
+import { GitFork } from 'lucide-react';
+
+const DecisionNode = ({ data, selected }: NodeProps<WorkflowNode>) => {
+  const { t } = useLocale();
+
+  return (
+    <div className="relative w-20 h-20 flex items-center justify-center">
+      <Handle type="target" position={Position.Top} id="top" className="w-2 h-2 !bg-blue-500 border-2 border-white z-10" />
+      <Handle type="target" position={Position.Left} id="left" className="w-2 h-2 !bg-blue-500 border-2 border-white z-10" />
+      
+      <div 
+        className={clsx(
+          'absolute w-14 h-14 bg-white border-2 transition-all transform rotate-45 flex items-center justify-center',
+          selected ? 'border-blue-500 shadow-md' : 'border-gray-200 hover:border-blue-300',
+          data.status === NodeStatus.SUCCESS && 'border-green-500 bg-green-50',
+          data.status === NodeStatus.FAILED && 'border-red-500 bg-red-50',
+          data.status === NodeStatus.RUNNING && 'border-blue-500 bg-blue-50 animate-pulse'
+        )}
+      >
+        <div className="-rotate-45">
+          <GitFork size={20} className="text-gray-600" />
+        </div>
+      </div>
+      
+      <div className="absolute -bottom-6 w-32 text-center text-xs text-gray-600 truncate">
+        {data.label || t('workflow.node.decision')}
+      </div>
+
+      <Handle type="source" position={Position.Right} id="right" className="w-2 h-2 !bg-blue-500 border-2 border-white z-10" />
+      <Handle type="source" position={Position.Bottom} id="bottom" className="w-2 h-2 !bg-blue-500 border-2 border-white z-10" />
+    </div>
+  );
+};
+
+export default memo(DecisionNode);
