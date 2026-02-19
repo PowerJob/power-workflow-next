@@ -56,7 +56,7 @@ const NestedWorkflowNode = ({ data, selected }: NestedWorkflowNodeProps) => {
       <div className="flex items-center gap-2 w-full overflow-hidden">
         <div className="relative flex-shrink-0">
           {isRunning && <span className="node-running-halo" aria-hidden />}
-          <div className={clsx('relative z-10 p-1 rounded', statusStyles.iconBg)}>
+          <div className="relative z-10 p-1 rounded">
             <Layers size={16} className={clsx('text-indigo-600', data.status && statusStyles.iconText)} />
           </div>
         </div>

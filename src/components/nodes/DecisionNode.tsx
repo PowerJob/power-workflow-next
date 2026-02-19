@@ -55,7 +55,7 @@ const DecisionNode = ({ data, selected }: DecisionNodeProps) => {
       >
         <div className="-rotate-45 relative">
           {isRunning && <span className="node-running-halo" aria-hidden />}
-          <div className={clsx('relative z-10 p-1 rounded', statusStyles.iconBg)}>
+          <div className="relative z-10 p-1 rounded">
             <Split size={18} className={clsx('text-gray-600', data.status && statusStyles.iconText)} />
           </div>
         </div>
