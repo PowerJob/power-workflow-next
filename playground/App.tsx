@@ -1,4 +1,4 @@
-import React, { useState, useCallback, type MouseEvent as ReactMouseEvent } from 'react';
+import React, { useState, useCallback, useRef, type MouseEvent as ReactMouseEvent } from 'react';
 import { addEdge, Connection, useNodesState, useEdgesState } from '@xyflow/react';
 import {
   WorkflowCanvas,
@@ -9,8 +9,13 @@ import {
   WorkflowNode,
   WorkflowEdge,
   WorkflowNodeData,
+  NodeType,
   assignOptimalHandles,
   getOptimalHandlesForEdge,
+  generateNodeId,
+  createDefaultNodeData,
+  exportToJSON,
+  importFromJSON,
 } from '../src/index';
 import { scenarios, ScenarioName, singleNodes } from './mock-data/scenarios';
 import '../src/index.css';
@@ -57,6 +62,8 @@ const PlaygroundInner = () => {
   const [locale, setLocale] = useState<'zh-CN' | 'en-US'>('zh-CN');
   const [layoutDirection, setLayoutDirection] = useState<'horizontal' | 'vertical'>('horizontal');
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [showMinimap, setShowMinimap] = useState(true);
+  const importFileInputRef = useRef<HTMLInputElement>(null);
 
   const initialData = getScenarioData(scenario);
   const [nodes, setNodes, onNodesChange] = useNodesState(initialData.nodes);
@@ -89,6 +96,66 @@ const PlaygroundInner = () => {
     );
     setSelectedNodeId(null);
   }, [setNodes]);
+
+  const handleToolbarAutoLayout = useCallback(
+    (direction: 'horizontal' | 'vertical') => {
+      setLayoutDirection(direction);
+      const newNodes = layoutNodes(nodes, edges, { direction });
+      setNodes(newNodes);
+      setEdges(assignOptimalHandles(newNodes, edges));
+    },
+    [nodes, edges, setNodes, setEdges],
+  );
+
+  const handleAddNode = useCallback(
+    (type: NodeType, position?: { x: number; y: number }) => {
+      const id = generateNodeId();
+      const label =
+        type === NodeType.JOB
+          ? '任务节点'
+          : type === NodeType.DECISION
+            ? '判断节点'
+            : '嵌套工作流';
+      const data = createDefaultNodeData(type, label) as WorkflowNodeData;
+      const pos = position ?? { x: 100, y: 100 };
+      setNodes((nds) => [...nds, { id, type, position: pos, data }]);
+    },
+    [setNodes],
+  );
+
+  const handleExport = useCallback(() => {
+    const json = exportToJSON(nodes, edges);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'workflow.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [nodes, edges]);
+
+  const handleImportClick = useCallback(() => {
+    importFileInputRef.current?.click();
+  }, []);
+
+  const handleImportFile = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const text = reader.result as string;
+        const result = importFromJSON(text);
+        if (result.success && result.data) {
+          setNodes(result.data.nodes);
+          setEdges(assignOptimalHandles(result.data.nodes, result.data.edges));
+        }
+      };
+      reader.readAsText(file);
+      e.target.value = '';
+    },
+    [setNodes, setEdges],
+  );
 
   const onConnect = useCallback(
     (params: Connection) => {
@@ -253,6 +320,13 @@ const PlaygroundInner = () => {
 
       {/* 画布区域 */}
       <div className="flex-1 relative">
+        <input
+          ref={importFileInputRef}
+          type="file"
+          accept=".json,application/json"
+          className="hidden"
+          onChange={handleImportFile}
+        />
         <WorkflowCanvas
           nodes={nodes}
           edges={edges}
@@ -263,6 +337,13 @@ const PlaygroundInner = () => {
           onPaneClick={handlePaneClick}
           mode={mode}
           defaultLocale={locale}
+          showToolbar
+          onAutoLayout={handleToolbarAutoLayout}
+          onAddNode={handleAddNode}
+          onExport={handleExport}
+          onImport={handleImportClick}
+          showMinimap={showMinimap}
+          onToggleMinimap={() => setShowMinimap((v) => !v)}
         />
         {mode === 'edit' && (
           <EditorPanel

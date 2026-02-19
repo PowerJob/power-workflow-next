@@ -60,6 +60,15 @@ export interface WorkflowNextProps extends Omit<
   onConnect?: (connection: unknown) => void;
   onNodeDataChange?: (nodeId: string, data: WorkflowNodeData) => void;
   onValidationError?: (errors: unknown[]) => void;
+
+  /** 是否在画布上方显示工具栏 */
+  showToolbar?: boolean;
+  onAutoLayout?: (direction: 'horizontal' | 'vertical') => void;
+  onAddNode?: (type: NodeType, position?: { x: number; y: number }) => void;
+  onExport?: () => void;
+  onImport?: () => void;
+  showMinimap?: boolean;
+  onToggleMinimap?: () => void;
 }
 
 export type WorkflowMode = 'edit' | 'view';
