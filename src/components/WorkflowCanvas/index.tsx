@@ -6,6 +6,7 @@ import {
   ReactFlowProvider,
   useReactFlow,
   useViewport,
+  MarkerType,
 } from '@xyflow/react';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import '@xyflow/react/dist/style.css';
@@ -120,6 +121,13 @@ const WorkflowCanvasInner = ({
             onConnect={onConnect}
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
+            defaultEdgeOptions={{
+              markerEnd: {
+                type: MarkerType.ArrowClosed,
+                width: 11,
+                height: 11,
+              },
+            }}
             fitView
             minZoom={0.25}
             maxZoom={2}

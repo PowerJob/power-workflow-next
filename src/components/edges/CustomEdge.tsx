@@ -5,11 +5,28 @@ import {
   getSmoothStepPath,
   EdgeProps,
   useReactFlow,
+  Position,
 } from '@xyflow/react';
 import { WorkflowEdge, WorkflowEdgeData } from '../../types/workflow';
 import { clsx } from 'clsx';
 
 type PropertyType = '' | 'true' | 'false';
+const ANCHOR_GAP = 8;
+
+const offsetFromAnchor = (x: number, y: number, position: Position | undefined, gap: number) => {
+  switch (position) {
+    case Position.Left:
+      return { x: x - gap, y };
+    case Position.Right:
+      return { x: x + gap, y };
+    case Position.Top:
+      return { x, y: y - gap };
+    case Position.Bottom:
+      return { x, y: y + gap };
+    default:
+      return { x, y };
+  }
+};
 
 const cycleProperty = (current: PropertyType): PropertyType => {
   if (current === '') return 'true';
@@ -32,25 +49,39 @@ const CustomEdge = ({
 }: EdgeProps<WorkflowEdge>) => {
   const { setEdges } = useReactFlow();
 
-  const [edgePath, labelX, labelY] = getSmoothStepPath({
-    sourceX,
-    sourceY,
-    sourcePosition,
-    targetX,
-    targetY,
-    targetPosition,
-  });
-
   const property = (data?.property as PropertyType) || '';
   const isTrue = property === 'true';
   const isFalse = property === 'false';
   const hasProperty = isTrue || isFalse;
 
+  const strokeColor = selected ? '#3B82F6' : isTrue ? '#52C41A' : isFalse ? '#EF4444' : '#94A3B8';
+  const strokeWidth = selected ? 2.5 : 2;
   const edgeStyle = {
     ...style,
-    strokeWidth: selected ? 2.5 : 2,
-    stroke: selected ? '#3B82F6' : isTrue ? '#52C41A' : isFalse ? '#EF4444' : '#94A3B8',
+    strokeWidth,
+    stroke: strokeColor,
   };
+
+  const sourcePoint = offsetFromAnchor(sourceX, sourceY, sourcePosition, ANCHOR_GAP);
+  const targetPoint = offsetFromAnchor(targetX, targetY, targetPosition, ANCHOR_GAP);
+
+  const [edgePath, labelX, labelY] = getSmoothStepPath({
+    sourceX: sourcePoint.x,
+    sourceY: sourcePoint.y,
+    sourcePosition,
+    targetX: targetPoint.x,
+    targetY: targetPoint.y,
+    targetPosition,
+    offset: 20,
+  });
+
+  const coloredMarkerEnd =
+    markerEnd && typeof markerEnd !== 'string'
+      ? {
+          ...markerEnd,
+          color: strokeColor,
+        }
+      : markerEnd;
 
   const handlePropertyToggle = useCallback(() => {
     setEdges((edges) =>
@@ -73,7 +104,7 @@ const CustomEdge = ({
 
   return (
     <>
-      <BaseEdge path={edgePath} markerEnd={markerEnd} style={edgeStyle} />
+      <BaseEdge path={edgePath} markerEnd={coloredMarkerEnd} style={edgeStyle} />
 
       <EdgeLabelRenderer>
         <div

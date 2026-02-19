@@ -1,5 +1,5 @@
 import { render } from '@testing-library/react';
-import { ReactFlowProvider } from '@xyflow/react';
+import { MarkerType, ReactFlowProvider } from '@xyflow/react';
 import { describe, it, expect } from 'vitest';
 import CustomEdge from './CustomEdge';
 import { LocaleProvider } from '../../contexts/LocaleContext';
@@ -43,5 +43,25 @@ describe('CustomEdge', () => {
     const { container } = renderEdge({ ...defaultProps, data: { property: 'false' } });
     const path = container.querySelector('.react-flow__edge-path');
     expect(path).toHaveStyle({ stroke: '#EF4444' });
+  });
+
+  it('keeps markerEnd attribute on edge path', () => {
+    const { container } = renderEdge(defaultProps);
+    const path = container.querySelector('.react-flow__edge-path');
+    expect(path).toHaveAttribute('marker-end');
+  });
+
+  it('renders marker object without breaking edge style', () => {
+    const { container } = renderEdge({
+      ...defaultProps,
+      markerEnd: {
+        type: MarkerType.ArrowClosed,
+        width: 11,
+        height: 11,
+      },
+    });
+    const path = container.querySelector('.react-flow__edge-path');
+    expect(path).toHaveStyle({ stroke: '#52C41A' });
+    expect(path).toHaveAttribute('marker-end');
   });
 });
