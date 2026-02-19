@@ -91,6 +91,7 @@ const WorkflowCanvasInner = ({
   onImport,
   showMinimap = true,
   onToggleMinimap,
+  fitView: fitViewProp,
   ...props
 }: WorkflowNextProps) => {
   const { t } = useLocale();
@@ -128,7 +129,7 @@ const WorkflowCanvasInner = ({
                 height: 11,
               },
             }}
-            fitView
+            fitView={fitViewProp ?? false}
             minZoom={0.25}
             maxZoom={2}
             nodesDraggable={!isView}

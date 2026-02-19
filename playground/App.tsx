@@ -65,11 +65,13 @@ const PlaygroundInner = () => {
   const [showMinimap, setShowMinimap] = useState(true);
   const importFileInputRef = useRef<HTMLInputElement>(null);
 
-  const initialData = getScenarioData(scenario);
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialData.nodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(
-    assignOptimalHandles(initialData.nodes, initialData.edges),
-  );
+  const rawInitial = getScenarioData(scenario);
+  const initialNodes = layoutNodes(rawInitial.nodes, rawInitial.edges, {
+    direction: 'horizontal',
+  });
+  const initialEdges = assignOptimalHandles(initialNodes, rawInitial.edges);
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
   useLocale();
 
@@ -181,8 +183,11 @@ const PlaygroundInner = () => {
     setScenario(newScenario);
     setSelectedNodeId(null);
     const data = getScenarioData(newScenario);
-    setNodes(data.nodes);
-    setEdges(assignOptimalHandles(data.nodes, data.edges));
+    const layoutedNodes = layoutNodes(data.nodes, data.edges, {
+      direction: 'horizontal',
+    });
+    setNodes(layoutedNodes);
+    setEdges(assignOptimalHandles(layoutedNodes, data.edges));
   };
 
   const handleLayout = () => {
@@ -194,8 +199,11 @@ const PlaygroundInner = () => {
   const handleReset = () => {
     setSelectedNodeId(null);
     const data = getScenarioData(scenario);
-    setNodes(data.nodes);
-    setEdges(assignOptimalHandles(data.nodes, data.edges));
+    const layoutedNodes = layoutNodes(data.nodes, data.edges, {
+      direction: 'horizontal',
+    });
+    setNodes(layoutedNodes);
+    setEdges(assignOptimalHandles(layoutedNodes, data.edges));
   };
 
   return (
