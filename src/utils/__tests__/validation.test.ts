@@ -13,7 +13,7 @@ import {
   validateField,
   composeValidators,
   type ValidationRule,
-} from './validation';
+} from '../validation';
 
 describe('validation', () => {
   describe('required', () => {

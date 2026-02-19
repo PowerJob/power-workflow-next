@@ -8,8 +8,8 @@ import {
   generateEdgeId,
   createDefaultNodeData,
   deepClone,
-} from './workflow';
-import { NodeType, type WorkflowNode, type WorkflowEdge } from '../types/workflow';
+} from '../workflow';
+import { NodeType, type WorkflowNode, type WorkflowEdge } from '../../types/workflow';
 
 describe('workflow', () => {
   describe('detectCycle', () => {
@@ -332,7 +332,7 @@ describe('workflow', () => {
 
     it('should generate unique IDs for same source/target', async () => {
       const id1 = generateEdgeId('a', 'b');
-      await new Promise((resolve) => setTimeout(resolve, 1));
+      await new Promise((resolve) => setTimeout(resolve, 5));
       const id2 = generateEdgeId('a', 'b');
 
       expect(id1).not.toBe(id2);
