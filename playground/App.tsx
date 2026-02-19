@@ -1,12 +1,14 @@
-import { useState, useCallback } from 'react';
+import React, { useState, useCallback, type MouseEvent as ReactMouseEvent } from 'react';
 import { addEdge, Connection, useNodesState, useEdgesState } from '@xyflow/react';
 import {
   WorkflowCanvas,
+  EditorPanel,
   layoutNodes,
   LocaleProvider,
   useLocale,
   WorkflowNode,
   WorkflowEdge,
+  WorkflowNodeData,
   assignOptimalHandles,
   getOptimalHandlesForEdge,
 } from '../src/index';
@@ -54,6 +56,7 @@ const PlaygroundInner = () => {
   const [mode, setMode] = useState<ViewMode>('edit');
   const [locale, setLocale] = useState<'zh-CN' | 'en-US'>('zh-CN');
   const [layoutDirection, setLayoutDirection] = useState<'horizontal' | 'vertical'>('horizontal');
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
   const initialData = getScenarioData(scenario);
   const [nodes, setNodes, onNodesChange] = useNodesState(initialData.nodes);
@@ -62,6 +65,30 @@ const PlaygroundInner = () => {
   );
 
   useLocale();
+
+  const editingNode = selectedNodeId ? nodes.find((n) => n.id === selectedNodeId) ?? null : null;
+
+  const handleNodeClick = useCallback(
+    (_: ReactMouseEvent, node: WorkflowNode) => {
+      if (mode === 'edit') setSelectedNodeId(node.id);
+    },
+    [mode],
+  );
+
+  const handlePaneClick = useCallback(() => {
+    setSelectedNodeId(null);
+  }, []);
+
+  const handleClosePanel = useCallback(() => {
+    setSelectedNodeId(null);
+  }, []);
+
+  const handleSaveNode = useCallback((nodeId: string, data: WorkflowNodeData) => {
+    setNodes((nds) =>
+      nds.map((n) => (n.id === nodeId ? { ...n, data } : n)),
+    );
+    setSelectedNodeId(null);
+  }, [setNodes]);
 
   const onConnect = useCallback(
     (params: Connection) => {
@@ -85,6 +112,7 @@ const PlaygroundInner = () => {
 
   const handleScenarioChange = (newScenario: typeof scenario) => {
     setScenario(newScenario);
+    setSelectedNodeId(null);
     const data = getScenarioData(newScenario);
     setNodes(data.nodes);
     setEdges(assignOptimalHandles(data.nodes, data.edges));
@@ -97,6 +125,7 @@ const PlaygroundInner = () => {
   };
 
   const handleReset = () => {
+    setSelectedNodeId(null);
     const data = getScenarioData(scenario);
     setNodes(data.nodes);
     setEdges(assignOptimalHandles(data.nodes, data.edges));
@@ -223,16 +252,26 @@ const PlaygroundInner = () => {
       </div>
 
       {/* 画布区域 */}
-      <div className="flex-1">
+      <div className="flex-1 relative">
         <WorkflowCanvas
           nodes={nodes}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
+          onNodeClick={handleNodeClick}
+          onPaneClick={handlePaneClick}
           mode={mode}
           defaultLocale={locale}
         />
+        {mode === 'edit' && (
+          <EditorPanel
+            node={editingNode}
+            open={!!editingNode}
+            onClose={handleClosePanel}
+            onSave={handleSaveNode}
+          />
+        )}
       </div>
 
       {/* 底部状态栏 */}
