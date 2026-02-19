@@ -16,11 +16,11 @@ export const ExecutionTooltip = ({ content, children }: ExecutionTooltipProps) =
       <TooltipPrimitive.Trigger asChild>{children}</TooltipPrimitive.Trigger>
       <TooltipPrimitive.Portal>
         <TooltipPrimitive.Content
-          className="z-[100] px-3 py-2 bg-gray-800 text-white rounded-md shadow-lg max-w-[300px] text-sm"
+          className="z-[100] w-[200px] p-3 bg-white text-gray-700 rounded-lg shadow-xl border border-gray-200 text-sm overflow-hidden"
           sideOffset={5}
         >
           {content}
-          <TooltipPrimitive.Arrow className="fill-gray-800" />
+          <TooltipPrimitive.Arrow className="fill-white stroke-gray-200" />
         </TooltipPrimitive.Content>
       </TooltipPrimitive.Portal>
     </TooltipPrimitive.Root>
@@ -70,24 +70,39 @@ export const ExecutionDetails = ({
   error,
 }: ExecutionDetailsProps) => {
   return (
-    <div className="space-y-1">
-      <div className="flex justify-between gap-4">
-        <span className="text-gray-400">时长:</span>
-        <span>{formatDuration(duration || 0)}</span>
+    <div className="flex flex-col gap-2 min-w-0">
+      <div className="grid grid-cols-[36px_1fr] gap-x-2 gap-y-1.5 text-xs">
+        <span className="text-gray-400 flex-shrink-0">时长</span>
+        <span className="font-medium font-mono text-gray-900 text-right min-w-0 break-words">
+          {formatDuration(duration || 0)}
+        </span>
+
+        {startTime && (
+          <>
+            <span className="text-gray-400 flex-shrink-0">开始</span>
+            <span className="font-mono text-gray-600 text-right min-w-0 break-words">
+              {formatDateTime(startTime)}
+            </span>
+          </>
+        )}
+        {endTime && (
+          <>
+            <span className="text-gray-400 flex-shrink-0">结束</span>
+            <span className="font-mono text-gray-600 text-right min-w-0 break-words">
+              {formatDateTime(endTime)}
+            </span>
+          </>
+        )}
       </div>
-      {startTime && (
-        <div className="flex justify-between gap-4">
-          <span className="text-gray-400">开始:</span>
-          <span>{formatDateTime(startTime)}</span>
+
+      {error && (
+        <div className="mt-1 p-2 bg-red-50 text-red-600 text-xs rounded border border-red-100 break-words leading-relaxed min-w-0 overflow-hidden">
+          <div className="font-semibold mb-0.5">
+            <span>❌ 执行失败</span>
+          </div>
+          <div className="break-words">{error}</div>
         </div>
       )}
-      {endTime && (
-        <div className="flex justify-between gap-4">
-          <span className="text-gray-400">结束:</span>
-          <span>{formatDateTime(endTime)}</span>
-        </div>
-      )}
-      {error && <div className="mt-2 pt-2 border-t border-gray-600 text-red-400">❌ {error}</div>}
     </div>
   );
 };
