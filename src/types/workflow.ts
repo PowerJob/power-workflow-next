@@ -37,6 +37,12 @@ export interface WorkflowNodeData extends Record<string, unknown> {
   targetWorkflowId?: string | number;
 }
 
+export interface WorkflowReferenceOption {
+  value: string | number;
+  label: string;
+  disabled?: boolean;
+}
+
 export type WorkflowNode = Node<WorkflowNodeData>;
 
 export interface WorkflowEdgeData extends Record<string, unknown> {
@@ -64,6 +70,8 @@ export interface WorkflowNextProps extends Omit<
 
   /** 是否在画布上方显示工具栏 */
   showToolbar?: boolean;
+  jobOptions?: WorkflowReferenceOption[];
+  workflowOptions?: WorkflowReferenceOption[];
   onAutoLayout?: (direction: 'horizontal' | 'vertical') => void;
   onAddNode?: (type: NodeType, position?: { x: number; y: number }) => void;
   onExport?: () => void;

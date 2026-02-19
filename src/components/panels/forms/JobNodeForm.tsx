@@ -1,11 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
-import { FormGroup, TextInput, NumberInput, Toggle, CodeEditor } from '.';
-import { WorkflowNodeData } from '../../../types/workflow';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { FormGroup, TextInput, NumberInput, SelectInput, Toggle, CodeEditor } from '.';
+import { WorkflowNodeData, WorkflowReferenceOption } from '../../../types/workflow';
 import { useLocale } from '../../../hooks/useLocale';
 import {
   ValidationRule,
   nodeName,
-  positiveInteger,
   range,
   json,
   Severity,
@@ -15,6 +14,7 @@ interface JobNodeFormProps {
   data: WorkflowNodeData;
   onChange: (data: WorkflowNodeData) => void;
   onValidationChange: (errors: Record<string, string>, warnings: Record<string, string>) => void;
+  jobOptions?: WorkflowReferenceOption[];
 }
 
 interface FormData {
@@ -28,7 +28,6 @@ interface FormData {
 
 const validationRules: Record<string, ValidationRule[]> = {
   label: [{ validator: nodeName }],
-  jobId: [{ validator: positiveInteger }],
   timeout: [
     { validator: range(0, 3600) },
     {
@@ -39,7 +38,7 @@ const validationRules: Record<string, ValidationRule[]> = {
   params: [{ validator: json }],
 };
 
-export const JobNodeForm = ({ data, onChange, onValidationChange }: JobNodeFormProps) => {
+export const JobNodeForm = ({ data, onChange, onValidationChange, jobOptions = [] }: JobNodeFormProps) => {
   const { t } = useLocale();
 
   const [formData, setFormData] = useState<FormData>({
@@ -54,6 +53,33 @@ export const JobNodeForm = ({ data, onChange, onValidationChange }: JobNodeFormP
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [warnings, setWarnings] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const hasAvailableJobOptions = jobOptions.length > 0;
+  const mergedJobOptions = useMemo(() => {
+    const optionMap = new Map<string, WorkflowReferenceOption>();
+    for (const option of jobOptions) {
+      optionMap.set(String(option.value), option);
+    }
+
+    if (
+      formData.jobId !== '' &&
+      formData.jobId !== null &&
+      formData.jobId !== undefined &&
+      !optionMap.has(String(formData.jobId))
+    ) {
+      optionMap.set(String(formData.jobId), {
+        value: formData.jobId,
+        label: `${t('workflow.panel.legacyValue')}: ${formData.jobId}`,
+        disabled: true,
+      });
+    }
+
+    return Array.from(optionMap.values());
+  }, [formData.jobId, jobOptions, t]);
+
+  const availableJobValueSet = useMemo(
+    () => new Set(mergedJobOptions.map((option) => String(option.value))),
+    [mergedJobOptions],
+  );
 
   useEffect(() => {
     setFormData({
@@ -69,7 +95,15 @@ export const JobNodeForm = ({ data, onChange, onValidationChange }: JobNodeFormP
   const validateField = useCallback(
     (field: string, value: unknown): { error?: string; warning?: string } => {
       const rules = validationRules[field];
-      if (!rules) return {};
+      if (!rules && field !== 'jobId') return {};
+
+      if (field === 'jobId') {
+        if (value === '' || value === null || value === undefined) return {};
+        if (!availableJobValueSet.has(String(value))) {
+          return { error: t('workflow.validation.optionNotFound') };
+        }
+        return {};
+      }
 
       let error: string | undefined;
       let warning: string | undefined;
@@ -89,7 +123,7 @@ export const JobNodeForm = ({ data, onChange, onValidationChange }: JobNodeFormP
 
       return { error, warning };
     },
-    [t],
+    [t, availableJobValueSet],
   );
 
   const handleChange = useCallback(
@@ -128,6 +162,18 @@ export const JobNodeForm = ({ data, onChange, onValidationChange }: JobNodeFormP
     setTouched((prev) => ({ ...prev, [field]: true }));
   }, []);
 
+  const handleJobIdSelect = useCallback(
+    (rawValue: string) => {
+      if (!rawValue) {
+        handleChange('jobId', '');
+        return;
+      }
+      const option = mergedJobOptions.find((item) => String(item.value) === rawValue);
+      handleChange('jobId', option ? option.value : rawValue);
+    },
+    [handleChange, mergedJobOptions],
+  );
+
   useEffect(() => {
     onValidationChange(errors, warnings);
   }, [errors, warnings, onValidationChange]);
@@ -149,14 +195,25 @@ export const JobNodeForm = ({ data, onChange, onValidationChange }: JobNodeFormP
       </FormGroup>
 
       <FormGroup label={t('workflow.panel.jobId')} error={touched.jobId ? errors.jobId : undefined}>
-        <NumberInput
-          value={formData.jobId || ''}
-          onChange={(e) => handleChange('jobId', e.target.value ? Number(e.target.value) : '')}
+        <SelectInput
+          value={formData.jobId ?? ''}
+          options={mergedJobOptions}
+          onChange={(e) => handleJobIdSelect(e.target.value)}
           onBlur={() => handleBlur('jobId')}
-          placeholder="1001"
-          min={1}
+          placeholder={t('workflow.panel.selectPlaceholder')}
+          disabled={!hasAvailableJobOptions}
           error={!!errors.jobId && touched.jobId}
         />
+        {!hasAvailableJobOptions && (
+          <p className="mt-1 text-xs text-gray-400">{t('workflow.panel.jobOptionsEmpty')}</p>
+        )}
+        {hasAvailableJobOptions &&
+          formData.jobId !== '' &&
+          formData.jobId !== null &&
+          formData.jobId !== undefined &&
+          !jobOptions.some((option) => String(option.value) === String(formData.jobId)) && (
+            <p className="mt-1 text-xs text-amber-500">{t('workflow.panel.legacyValueHint')}</p>
+          )}
       </FormGroup>
 
       <FormGroup label={t('workflow.panel.enable')}>

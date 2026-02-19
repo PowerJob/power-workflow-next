@@ -126,6 +126,8 @@ const WorkflowCanvasInner = ({
   showMinimap = true,
   onToggleMinimap,
   undoableActions = 50,
+  jobOptions: _jobOptions,
+  workflowOptions: _workflowOptions,
   connectSnapDirection = 'horizontal',
   fitView: fitViewProp,
   isValidConnection: userIsValidConnection,

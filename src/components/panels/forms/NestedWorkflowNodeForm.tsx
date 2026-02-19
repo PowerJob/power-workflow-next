@@ -1,13 +1,14 @@
-import { useState, useEffect, useCallback } from 'react';
-import { FormGroup, TextInput, NumberInput, Toggle, CodeEditor } from '.';
-import { WorkflowNodeData } from '../../../types/workflow';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { FormGroup, TextInput, SelectInput, Toggle, CodeEditor } from '.';
+import { WorkflowNodeData, WorkflowReferenceOption } from '../../../types/workflow';
 import { useLocale } from '../../../hooks/useLocale';
-import { ValidationRule, nodeName, positiveInteger, json } from '../../../utils/validation';
+import { ValidationRule, nodeName, json } from '../../../utils/validation';
 
 interface NestedWorkflowNodeFormProps {
   data: WorkflowNodeData;
   onChange: (data: WorkflowNodeData) => void;
   onValidationChange: (errors: Record<string, string>, warnings: Record<string, string>) => void;
+  workflowOptions?: WorkflowReferenceOption[];
 }
 
 interface FormData {
@@ -20,7 +21,6 @@ interface FormData {
 
 const validationRules: Record<string, ValidationRule[]> = {
   label: [{ validator: nodeName }],
-  targetWorkflowId: [{ validator: positiveInteger }],
   params: [{ validator: json }],
 };
 
@@ -28,6 +28,7 @@ export const NestedWorkflowNodeForm = ({
   data,
   onChange,
   onValidationChange,
+  workflowOptions = [],
 }: NestedWorkflowNodeFormProps) => {
   const { t } = useLocale();
 
@@ -41,6 +42,33 @@ export const NestedWorkflowNodeForm = ({
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const hasAvailableWorkflowOptions = workflowOptions.length > 0;
+  const mergedWorkflowOptions = useMemo(() => {
+    const optionMap = new Map<string, WorkflowReferenceOption>();
+    for (const option of workflowOptions) {
+      optionMap.set(String(option.value), option);
+    }
+
+    if (
+      formData.targetWorkflowId !== '' &&
+      formData.targetWorkflowId !== null &&
+      formData.targetWorkflowId !== undefined &&
+      !optionMap.has(String(formData.targetWorkflowId))
+    ) {
+      optionMap.set(String(formData.targetWorkflowId), {
+        value: formData.targetWorkflowId,
+        label: `${t('workflow.panel.legacyValue')}: ${formData.targetWorkflowId}`,
+        disabled: true,
+      });
+    }
+
+    return Array.from(optionMap.values());
+  }, [formData.targetWorkflowId, workflowOptions, t]);
+
+  const availableWorkflowValueSet = useMemo(
+    () => new Set(mergedWorkflowOptions.map((option) => String(option.value))),
+    [mergedWorkflowOptions],
+  );
 
   useEffect(() => {
     setFormData({
@@ -55,7 +83,17 @@ export const NestedWorkflowNodeForm = ({
   const validateField = useCallback(
     (field: string, value: unknown): { error?: string } => {
       const rules = validationRules[field];
-      if (!rules) return {};
+      if (!rules && field !== 'targetWorkflowId') return {};
+
+      if (field === 'targetWorkflowId') {
+        if (value === '' || value === null || value === undefined) {
+          return { error: t('workflow.validation.required') };
+        }
+        if (!availableWorkflowValueSet.has(String(value))) {
+          return { error: t('workflow.validation.optionNotFound') };
+        }
+        return {};
+      }
 
       for (const rule of rules) {
         const result = rule.validator(value);
@@ -66,7 +104,7 @@ export const NestedWorkflowNodeForm = ({
 
       return {};
     },
-    [t],
+    [t, availableWorkflowValueSet],
   );
 
   const handleChange = useCallback(
@@ -98,6 +136,18 @@ export const NestedWorkflowNodeForm = ({
     setTouched((prev) => ({ ...prev, [field]: true }));
   }, []);
 
+  const handleWorkflowIdSelect = useCallback(
+    (rawValue: string) => {
+      if (!rawValue) {
+        handleChange('targetWorkflowId', '');
+        return;
+      }
+      const option = mergedWorkflowOptions.find((item) => String(item.value) === rawValue);
+      handleChange('targetWorkflowId', option ? option.value : rawValue);
+    },
+    [handleChange, mergedWorkflowOptions],
+  );
+
   useEffect(() => {
     onValidationChange(errors, {});
   }, [errors, onValidationChange]);
@@ -123,16 +173,25 @@ export const NestedWorkflowNodeForm = ({
         required
         error={touched.targetWorkflowId ? errors.targetWorkflowId : undefined}
       >
-        <NumberInput
-          value={formData.targetWorkflowId || ''}
-          onChange={(e) =>
-            handleChange('targetWorkflowId', e.target.value ? Number(e.target.value) : '')
-          }
+        <SelectInput
+          value={formData.targetWorkflowId ?? ''}
+          options={mergedWorkflowOptions}
+          onChange={(e) => handleWorkflowIdSelect(e.target.value)}
           onBlur={() => handleBlur('targetWorkflowId')}
-          placeholder="1001"
-          min={1}
+          placeholder={t('workflow.panel.selectPlaceholder')}
+          disabled={!hasAvailableWorkflowOptions}
           error={!!errors.targetWorkflowId && touched.targetWorkflowId}
         />
+        {!hasAvailableWorkflowOptions && (
+          <p className="mt-1 text-xs text-gray-400">{t('workflow.panel.workflowOptionsEmpty')}</p>
+        )}
+        {hasAvailableWorkflowOptions &&
+          formData.targetWorkflowId !== '' &&
+          formData.targetWorkflowId !== null &&
+          formData.targetWorkflowId !== undefined &&
+          !workflowOptions.some(
+            (option) => String(option.value) === String(formData.targetWorkflowId),
+          ) && <p className="mt-1 text-xs text-amber-500">{t('workflow.panel.legacyValueHint')}</p>}
       </FormGroup>
 
       <FormGroup label={t('workflow.panel.enable')}>

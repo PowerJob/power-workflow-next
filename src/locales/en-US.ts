@@ -20,6 +20,13 @@ export const enUS: Record<LocaleKey, string> = {
   'workflow.panel.condition': 'Condition',
   'workflow.panel.target': 'Target Workflow',
   'workflow.panel.jobId': 'Job ID',
+  'workflow.panel.selectPlaceholder': 'Please select',
+  'workflow.panel.jobOptionsEmpty': 'No job IDs available. Configure job catalog first.',
+  'workflow.panel.workflowOptionsEmpty':
+    'No workflow IDs available. Configure workflow catalog first.',
+  'workflow.panel.legacyValue': 'Legacy Value',
+  'workflow.panel.legacyValueHint':
+    'Current value is not in options. Please reselect before saving.',
   'workflow.panel.conditionHint': 'Use ${variable} format to reference upstream results',
   'workflow.validation.required': 'Required',
   'workflow.validation.minLength': 'Length is too short',
@@ -30,6 +37,7 @@ export const enUS: Record<LocaleKey, string> = {
   'workflow.validation.condition':
     'Invalid condition expression, must contain variable reference and comparison operator',
   'workflow.validation.positiveInteger': 'Please enter a positive integer',
+  'workflow.validation.optionNotFound': 'Selected value is not in available options',
   'workflow.validation.nodeName': 'Only letters, numbers, underscores, and hyphens are allowed',
   'workflow.validation.nodeNameLength': 'Name length must be between 1-50 characters',
   'workflow.validation.timeoutWarning':

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, type MouseEvent as ReactMouseEvent } from 'react';
+import React, { useState, useCallback, useRef, useMemo, type MouseEvent as ReactMouseEvent } from 'react';
 import { addEdge, Connection, useNodesState, useEdgesState } from '@xyflow/react';
 import {
   WorkflowCanvas,
@@ -9,6 +9,7 @@ import {
   WorkflowNode,
   WorkflowEdge,
   WorkflowNodeData,
+  WorkflowReferenceOption,
   NodeType,
   assignOptimalHandles,
   getSnapHandlesForEdge,
@@ -47,6 +48,31 @@ const singleNodeMap: Record<SingleNodeKey, string> = {
   'single-nested': 'nestedNode',
 };
 
+const buildReferenceOptions = (
+  field: 'jobId' | 'targetWorkflowId',
+  type: NodeType.JOB | NodeType.NESTED_WORKFLOW,
+): WorkflowReferenceOption[] => {
+  const optionMap = new Map<string, WorkflowReferenceOption>();
+  const allScenarios = [...Object.values(scenarios), ...Object.values(singleNodes)];
+
+  for (const scenario of allScenarios) {
+    for (const node of scenario.nodes) {
+      if (node.data.type !== type) continue;
+      const rawValue = node.data[field];
+      if (rawValue === undefined || rawValue === null || rawValue === '') continue;
+      const key = String(rawValue);
+      if (!optionMap.has(key)) {
+        optionMap.set(key, {
+          value: rawValue as string | number,
+          label: `${rawValue} - ${node.data.label}`,
+        });
+      }
+    }
+  }
+
+  return Array.from(optionMap.values());
+};
+
 const getScenarioData = (name: ScenarioName | SingleNodeKey): ScenarioData => {
   if (name.startsWith('single-')) {
     return singleNodes[singleNodeMap[name as SingleNodeKey]] as ScenarioData;
@@ -74,6 +100,14 @@ const PlaygroundInner = () => {
   });
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const jobOptions = useMemo(
+    () => buildReferenceOptions('jobId', NodeType.JOB),
+    [],
+  );
+  const workflowOptions = useMemo(
+    () => buildReferenceOptions('targetWorkflowId', NodeType.NESTED_WORKFLOW),
+    [],
+  );
 
   useLocale();
 
@@ -366,6 +400,8 @@ const PlaygroundInner = () => {
             open={!!editingNode}
             onClose={handleClosePanel}
             onSave={handleSaveNode}
+            jobOptions={jobOptions}
+            workflowOptions={workflowOptions}
           />
         )}
       </div>

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { clsx } from 'clsx';
 import { ClipboardList, Split, Layers, X } from 'lucide-react';
-import { WorkflowNodeData, NodeType, WorkflowNode } from '../../types/workflow';
+import { WorkflowNodeData, NodeType, WorkflowNode, WorkflowReferenceOption } from '../../types/workflow';
 import { useLocale } from '../../hooks/useLocale';
 import { JobNodeForm, DecisionNodeForm, NestedWorkflowNodeForm } from './forms';
 
@@ -11,6 +11,8 @@ interface EditorPanelProps {
   onClose: () => void;
   onSave: (nodeId: string, data: WorkflowNodeData) => void | Promise<void>;
   onBeforeSave?: (nodeId: string, data: WorkflowNodeData) => boolean | Promise<boolean>;
+  jobOptions?: WorkflowReferenceOption[];
+  workflowOptions?: WorkflowReferenceOption[];
 }
 
 export interface EditorPanelRef {
@@ -30,13 +32,27 @@ interface NodeFormWrapperProps {
   data: WorkflowNodeData;
   onChange: (data: WorkflowNodeData) => void;
   onValidationChange: (errors: Record<string, string>, warnings: Record<string, string>) => void;
+  jobOptions?: WorkflowReferenceOption[];
+  workflowOptions?: WorkflowReferenceOption[];
 }
 
-const NodeFormWrapper = ({ type, data, onChange, onValidationChange }: NodeFormWrapperProps) => {
+const NodeFormWrapper = ({
+  type,
+  data,
+  onChange,
+  onValidationChange,
+  jobOptions,
+  workflowOptions,
+}: NodeFormWrapperProps) => {
   switch (type) {
     case NodeType.JOB:
       return (
-        <JobNodeForm data={data} onChange={onChange} onValidationChange={onValidationChange} />
+        <JobNodeForm
+          data={data}
+          onChange={onChange}
+          onValidationChange={onValidationChange}
+          jobOptions={jobOptions}
+        />
       );
     case NodeType.DECISION:
       return (
@@ -48,6 +64,7 @@ const NodeFormWrapper = ({ type, data, onChange, onValidationChange }: NodeFormW
           data={data}
           onChange={onChange}
           onValidationChange={onValidationChange}
+          workflowOptions={workflowOptions}
         />
       );
     default:
@@ -69,7 +86,7 @@ const getNodeIcon = (type: NodeType) => {
 };
 
 export const EditorPanel = forwardRef<EditorPanelRef, EditorPanelProps>(
-  ({ node, open, onClose, onSave, onBeforeSave }, ref) => {
+  ({ node, open, onClose, onSave, onBeforeSave, jobOptions, workflowOptions }, ref) => {
     const { t } = useLocale();
 
     const [editedData, setEditedData] = useState<WorkflowNodeData | null>(null);
@@ -203,6 +220,8 @@ export const EditorPanel = forwardRef<EditorPanelRef, EditorPanelProps>(
             data={editedData}
             onChange={handleDataChange}
             onValidationChange={handleValidationChange}
+            jobOptions={jobOptions}
+            workflowOptions={workflowOptions}
           />
         </div>
 
