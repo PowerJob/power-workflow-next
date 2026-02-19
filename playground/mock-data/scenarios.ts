@@ -329,19 +329,6 @@ export const complexWorkflow = {
         targetWorkflowId: 'small-data-wf',
       },
     },
-    // 分支 C - 错误处理
-    {
-      id: 'c5',
-      type: NodeType.JOB,
-      position: { x: 500, y: 320 },
-      data: {
-        label: '错误处理',
-        type: NodeType.JOB,
-        jobId: 5002,
-        enable: true,
-        skip: true,
-      },
-    },
     // 汇聚层
     {
       id: 'c6',
@@ -381,10 +368,8 @@ export const complexWorkflow = {
     { id: 'ce1', source: 'c1', target: 'c2', type: 'custom' },
     { id: 'ce2', source: 'c2', target: 'c3', type: 'custom', data: { property: 'true' } },
     { id: 'ce3', source: 'c2', target: 'c4', type: 'custom', data: { property: 'false' } },
-    { id: 'ce4', source: 'c2', target: 'c5', type: 'custom' },
     { id: 'ce5', source: 'c3', target: 'c6', type: 'custom' },
     { id: 'ce6', source: 'c4', target: 'c6', type: 'custom' },
-    { id: 'ce7', source: 'c5', target: 'c6', type: 'custom' },
     { id: 'ce8', source: 'c6', target: 'c7', type: 'custom', data: { property: 'true' } },
     { id: 'ce9', source: 'c6', target: 'c8', type: 'custom', data: { property: 'false' } },
   ] as WorkflowEdge[],

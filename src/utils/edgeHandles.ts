@@ -1,86 +1,40 @@
 /**
- * 根据节点位置为边计算最优 sourceHandle / targetHandle，使连线尽量直线
+ * 根据布局方向为边计算 sourceHandle / targetHandle：横向 right→left，纵向 bottom→top
  * @author Echo009
  */
-import { WorkflowNode, WorkflowEdge, NodeType } from '../types/workflow';
-
-const NODE_DIMENSIONS: Record<string, { width: number; height: number }> = {
-  [NodeType.JOB]: { width: 200, height: 56 },
-  [NodeType.DECISION]: { width: 80, height: 56 },
-  [NodeType.NESTED_WORKFLOW]: { width: 200, height: 56 },
-};
-
-const DEFAULT_DIMENSION = { width: 200, height: 56 };
+import { WorkflowNode, WorkflowEdge } from '../types/workflow';
 
 type SourceHandleId = 'right' | 'bottom';
 type TargetHandleId = 'left' | 'top';
 
-function getDimensions(node: WorkflowNode): { width: number; height: number } {
-  const type = node.data?.type || NodeType.JOB;
-  return NODE_DIMENSIONS[type] ?? DEFAULT_DIMENSION;
-}
-
-/** 源节点出口：right 中心、bottom 中心 */
-function getSourceHandlePositions(
-  node: WorkflowNode,
-): { right: { x: number; y: number }; bottom: { x: number; y: number } } {
-  const { width, height } = getDimensions(node);
-  const { x, y } = node.position;
-  return {
-    right: { x: x + width, y: y + height / 2 },
-    bottom: { x: x + width / 2, y: y + height },
-  };
-}
-
-/** 目标节点入口：left 中心、top 中心 */
-function getTargetHandlePositions(
-  node: WorkflowNode,
-): { left: { x: number; y: number }; top: { x: number; y: number } } {
-  const { width, height } = getDimensions(node);
-  const { x, y } = node.position;
-  return {
-    left: { x, y: y + height / 2 },
-    top: { x: x + width / 2, y },
-  };
-}
-
-function distance(a: { x: number; y: number }, b: { x: number; y: number }): number {
-  return Math.hypot(b.x - a.x, b.y - a.y);
+export interface EdgeHandlesOptions {
+  direction?: 'horizontal' | 'vertical';
 }
 
 /**
- * 为单条边计算最优的 sourceHandle / targetHandle（欧几里得距离最短的一对）
+ * 为单条边根据布局方向返回固定的 sourceHandle / targetHandle
+ * - horizontal：源 right，目标 left
+ * - vertical：源 bottom，目标 top
  */
 export function getOptimalHandlesForEdge(
-  sourceNode: WorkflowNode,
-  targetNode: WorkflowNode,
+  _sourceNode: WorkflowNode,
+  _targetNode: WorkflowNode,
+  options: EdgeHandlesOptions = {},
 ): { sourceHandleId: SourceHandleId; targetHandleId: TargetHandleId } {
-  const src = getSourceHandlePositions(sourceNode);
-  const tgt = getTargetHandlePositions(targetNode);
-
-  const candidates: { sourceHandleId: SourceHandleId; targetHandleId: TargetHandleId; d: number }[] = [
-    { sourceHandleId: 'right', targetHandleId: 'left', d: distance(src.right, tgt.left) },
-    { sourceHandleId: 'right', targetHandleId: 'top', d: distance(src.right, tgt.top) },
-    { sourceHandleId: 'bottom', targetHandleId: 'left', d: distance(src.bottom, tgt.left) },
-    { sourceHandleId: 'bottom', targetHandleId: 'top', d: distance(src.bottom, tgt.top) },
-  ];
-
-  let best = candidates[0];
-  for (let i = 1; i < candidates.length; i++) {
-    if (candidates[i].d < best.d) best = candidates[i];
+  const direction = options.direction ?? 'horizontal';
+  if (direction === 'vertical') {
+    return { sourceHandleId: 'bottom', targetHandleId: 'top' };
   }
-  return {
-    sourceHandleId: best.sourceHandleId,
-    targetHandleId: best.targetHandleId,
-  };
+  return { sourceHandleId: 'right', targetHandleId: 'left' };
 }
 
 /**
- * 为所有边根据当前节点位置赋予最优的 sourceHandle / targetHandle，不修改原数组
+ * 为所有边根据布局方向赋予 sourceHandle / targetHandle，不修改原数组
  */
 export function assignOptimalHandles(
   nodes: WorkflowNode[],
   edges: WorkflowEdge[],
+  options: EdgeHandlesOptions = {},
 ): WorkflowEdge[] {
   const nodeMap = new Map(nodes.map((n) => [n.id, n]));
 
@@ -89,7 +43,11 @@ export function assignOptimalHandles(
     const targetNode = nodeMap.get(edge.target);
     if (!sourceNode || !targetNode) return edge;
 
-    const { sourceHandleId, targetHandleId } = getOptimalHandlesForEdge(sourceNode, targetNode);
+    const { sourceHandleId, targetHandleId } = getOptimalHandlesForEdge(
+      sourceNode,
+      targetNode,
+      options,
+    );
     return {
       ...edge,
       sourceHandle: sourceHandleId,

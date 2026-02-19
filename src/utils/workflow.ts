@@ -52,6 +52,9 @@ export const checkDecisionNodeExits = (nodes: WorkflowNode[], edges: WorkflowEdg
     if (outgoingEdges.length < 2) {
       errors.push(`Decision node "${node.data.label}" needs at least 2 exits`);
     }
+    if (outgoingEdges.length > 2) {
+      errors.push(`Decision node "${node.data.label}" must have at most 2 exits`);
+    }
   }
 
   return errors;

@@ -140,11 +140,14 @@ describe('workflow', () => {
       expect(checkDecisionNodeExits(nodes, edges)).toEqual([]);
     });
 
-    it('should return empty array for decision node with more than two exits', () => {
+    it('should return error for decision node with more than two exits', () => {
       const nodes = [createMockNode('1', NodeType.DECISION, 'Decision1')];
       const edges = [createMockEdge('1', '2'), createMockEdge('1', '3'), createMockEdge('1', '4')];
 
-      expect(checkDecisionNodeExits(nodes, edges)).toEqual([]);
+      const errors = checkDecisionNodeExits(nodes, edges);
+      expect(errors).toHaveLength(1);
+      expect(errors[0]).toContain('Decision1');
+      expect(errors[0]).toContain('at most 2 exits');
     });
 
     it('should check multiple decision nodes', () => {

@@ -69,7 +69,9 @@ const PlaygroundInner = () => {
   const initialNodes = layoutNodes(rawInitial.nodes, rawInitial.edges, {
     direction: 'horizontal',
   });
-  const initialEdges = assignOptimalHandles(initialNodes, rawInitial.edges);
+  const initialEdges = assignOptimalHandles(initialNodes, rawInitial.edges, {
+    direction: 'horizontal',
+  });
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
@@ -104,7 +106,7 @@ const PlaygroundInner = () => {
       setLayoutDirection(direction);
       const newNodes = layoutNodes(nodes, edges, { direction });
       setNodes(newNodes);
-      setEdges(assignOptimalHandles(newNodes, edges));
+      setEdges(assignOptimalHandles(newNodes, edges, { direction }));
     },
     [nodes, edges, setNodes, setEdges],
   );
@@ -164,7 +166,11 @@ const PlaygroundInner = () => {
       const sourceNode = nodes.find((n) => n.id === params.source);
       const targetNode = nodes.find((n) => n.id === params.target);
       const { sourceHandleId, targetHandleId } =
-        sourceNode && targetNode ? getOptimalHandlesForEdge(sourceNode, targetNode) : {};
+        sourceNode && targetNode
+          ? getOptimalHandlesForEdge(sourceNode, targetNode, {
+              direction: layoutDirection,
+            })
+          : {};
       setEdges((eds) =>
         addEdge(
           {
@@ -176,7 +182,7 @@ const PlaygroundInner = () => {
         ),
       );
     },
-    [nodes, setEdges],
+    [nodes, layoutDirection, setEdges],
   );
 
   const handleScenarioChange = (newScenario: typeof scenario) => {
@@ -187,13 +193,13 @@ const PlaygroundInner = () => {
       direction: 'horizontal',
     });
     setNodes(layoutedNodes);
-    setEdges(assignOptimalHandles(layoutedNodes, data.edges));
+    setEdges(assignOptimalHandles(layoutedNodes, data.edges, { direction: 'horizontal' }));
   };
 
   const handleLayout = () => {
     const newNodes = layoutNodes(nodes, edges, { direction: layoutDirection });
     setNodes(newNodes);
-    setEdges(assignOptimalHandles(newNodes, edges));
+    setEdges(assignOptimalHandles(newNodes, edges, { direction: layoutDirection }));
   };
 
   const handleReset = () => {
@@ -203,7 +209,7 @@ const PlaygroundInner = () => {
       direction: 'horizontal',
     });
     setNodes(layoutedNodes);
-    setEdges(assignOptimalHandles(layoutedNodes, data.edges));
+    setEdges(assignOptimalHandles(layoutedNodes, data.edges, { direction: 'horizontal' }));
   };
 
   return (

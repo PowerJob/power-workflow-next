@@ -15,9 +15,10 @@ import { nodeTypes } from '../nodes';
 import { edgeTypes } from '../edges';
 import { Toolbar } from '../toolbar';
 import { WorkflowMinimap } from '../common/WorkflowMinimap';
-import { WorkflowNextProps } from '../../types/workflow';
+import { WorkflowNextProps, NodeType } from '../../types/workflow';
 import { useLocale } from '../../hooks/useLocale';
 import { LocaleProvider } from '../../contexts/LocaleContext';
+import type { Connection } from '@xyflow/react';
 
 interface CanvasToolbarProps {
   mode: 'edit' | 'view';
@@ -92,10 +93,23 @@ const WorkflowCanvasInner = ({
   showMinimap = true,
   onToggleMinimap,
   fitView: fitViewProp,
+  isValidConnection: userIsValidConnection,
   ...props
 }: WorkflowNextProps) => {
   const { t } = useLocale();
   const isView = mode === 'view';
+
+  const isValidConnection = useCallback(
+    (connection: Connection) => {
+      const sourceNode = nodes?.find((n) => n.id === connection.source);
+      if (sourceNode?.data?.type === NodeType.DECISION) {
+        const outgoingCount = edges?.filter((e) => e.source === connection.source).length ?? 0;
+        if (outgoingCount >= 2) return false;
+      }
+      return userIsValidConnection ? userIsValidConnection(connection) : true;
+    },
+    [nodes, edges, userIsValidConnection],
+  );
 
   return (
     <TooltipPrimitive.Provider delayDuration={500}>
@@ -129,6 +143,7 @@ const WorkflowCanvasInner = ({
                 height: 11,
               },
             }}
+            isValidConnection={isValidConnection}
             fitView={fitViewProp ?? false}
             minZoom={0.25}
             maxZoom={2}
