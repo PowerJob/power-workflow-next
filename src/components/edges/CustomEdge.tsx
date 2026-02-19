@@ -2,12 +2,12 @@ import { memo, useCallback } from 'react';
 import {
   BaseEdge,
   EdgeLabelRenderer,
-  getSmoothStepPath,
+  getBezierPath,
   EdgeProps,
   useReactFlow,
   Position,
 } from '@xyflow/react';
-import { WorkflowEdge, WorkflowEdgeData } from '../../types/workflow';
+import { WorkflowEdge, WorkflowEdgeData, NodeType } from '../../types/workflow';
 import { clsx } from 'clsx';
 
 type PropertyType = '' | 'true' | 'false';
@@ -36,6 +36,7 @@ const cycleProperty = (current: PropertyType): PropertyType => {
 
 const CustomEdge = ({
   id,
+  source,
   sourceX,
   sourceY,
   targetX,
@@ -47,14 +48,24 @@ const CustomEdge = ({
   data,
   selected,
 }: EdgeProps<WorkflowEdge>) => {
-  const { setEdges } = useReactFlow();
+  const { setEdges, getNode } = useReactFlow();
+  const sourceNode = getNode(source);
+  const isFromDecisionNode = sourceNode?.data?.type === NodeType.DECISION;
 
   const property = (data?.property as PropertyType) || '';
   const isTrue = property === 'true';
   const isFalse = property === 'false';
   const hasProperty = isTrue || isFalse;
 
-  const strokeColor = selected ? '#3B82F6' : isTrue ? '#52C41A' : isFalse ? '#EF4444' : '#94A3B8';
+  const strokeColor = !isFromDecisionNode
+    ? (selected ? '#3B82F6' : '#94A3B8')
+    : selected
+      ? '#3B82F6'
+      : isTrue
+        ? '#52C41A'
+        : isFalse
+          ? '#EF4444'
+          : '#94A3B8';
   const strokeWidth = selected ? 2.5 : 2;
   const edgeStyle = {
     ...style,
@@ -65,14 +76,13 @@ const CustomEdge = ({
   const sourcePoint = offsetFromAnchor(sourceX, sourceY, sourcePosition, ANCHOR_GAP);
   const targetPoint = offsetFromAnchor(targetX, targetY, targetPosition, ANCHOR_GAP);
 
-  const [edgePath, labelX, labelY] = getSmoothStepPath({
+  const [edgePath, labelX, labelY] = getBezierPath({
     sourceX: sourcePoint.x,
     sourceY: sourcePoint.y,
     sourcePosition,
     targetX: targetPoint.x,
     targetY: targetPoint.y,
     targetPosition,
-    offset: 20,
   });
 
   const coloredMarkerEnd =
@@ -106,42 +116,44 @@ const CustomEdge = ({
     <>
       <BaseEdge path={edgePath} markerEnd={coloredMarkerEnd} style={edgeStyle} />
 
-      <EdgeLabelRenderer>
-        <div
-          style={{
-            position: 'absolute',
-            transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
-            fontSize: 12,
-            pointerEvents: 'all',
-          }}
-          className="nodrag nopan"
-        >
-          {hasProperty ? (
-            <button
-              onClick={handlePropertyToggle}
-              className={clsx(
-                'px-1.5 py-0.5 rounded text-white font-bold text-xs shadow-sm cursor-pointer transition-all',
-                'hover:scale-110',
-                isTrue ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600',
-              )}
-            >
-              {isTrue ? 'Y' : 'N'}
-            </button>
-          ) : (
-            <button
-              onClick={handlePropertyToggle}
-              className={clsx(
-                'w-5 h-5 rounded-full bg-gray-200 text-gray-500 text-xs',
-                'flex items-center justify-center cursor-pointer',
-                'hover:bg-gray-300 transition-all',
-                selected && 'ring-2 ring-blue-300',
-              )}
-            >
-              +
-            </button>
-          )}
-        </div>
-      </EdgeLabelRenderer>
+      {isFromDecisionNode && (
+        <EdgeLabelRenderer>
+          <div
+            style={{
+              position: 'absolute',
+              transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
+              fontSize: 12,
+              pointerEvents: 'all',
+            }}
+            className="nodrag nopan"
+          >
+            {hasProperty ? (
+              <button
+                onClick={handlePropertyToggle}
+                className={clsx(
+                  'px-1.5 py-0.5 rounded text-white font-bold text-xs shadow-sm cursor-pointer transition-all',
+                  'hover:scale-110',
+                  isTrue ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600',
+                )}
+              >
+                {isTrue ? 'Y' : 'N'}
+              </button>
+            ) : (
+              <button
+                onClick={handlePropertyToggle}
+                className={clsx(
+                  'w-5 h-5 rounded-full bg-gray-200 text-gray-500 text-xs',
+                  'flex items-center justify-center cursor-pointer',
+                  'hover:bg-gray-300 transition-all',
+                  selected && 'ring-2 ring-blue-300',
+                )}
+              >
+                +
+              </button>
+            )}
+          </div>
+        </EdgeLabelRenderer>
+      )}
     </>
   );
 };
