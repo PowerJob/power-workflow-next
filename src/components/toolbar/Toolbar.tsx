@@ -13,8 +13,10 @@ import {
   Layers,
   ArrowRight,
   ArrowDown,
+  LayoutDashboard,
+  Map,
 } from 'lucide-react';
-import { ToolbarButton, ToolbarDivider, ToolbarDropdown, DropdownItem } from './ToolbarButton';
+import { ToolbarButton, ToolbarDropdown, DropdownItem } from './ToolbarButton';
 import { useLocale } from '../../hooks/useLocale';
 import { NodeType } from '../../types/workflow';
 
@@ -90,7 +92,7 @@ export const Toolbar = ({
   }, [onAutoLayout]);
 
   return (
-    <div className="flex items-center h-12 px-3 bg-white border-b border-gray-200 gap-1">
+    <div className="flex items-center h-10 px-2 bg-white border-b border-gray-200 gap-2">
       {isEdit && (
         <>
           <ToolbarButton
@@ -105,9 +107,11 @@ export const Toolbar = ({
             disabled={!canRedo}
             title={t('workflow.toolbar.redo')}
           />
-          <ToolbarDivider />
 
-          <ToolbarDropdown icon={<ArrowRight size={16} />} label={t('workflow.toolbar.layout')}>
+          <ToolbarDropdown
+            icon={<LayoutDashboard size={16} />}
+            title={t('workflow.toolbar.layout')}
+          >
             <DropdownItem
               icon={<ArrowRight size={14} />}
               label="横向布局"
@@ -119,9 +123,8 @@ export const Toolbar = ({
               onClick={handleVerticalLayout}
             />
           </ToolbarDropdown>
-          <ToolbarDivider />
 
-          <ToolbarDropdown icon={<Plus size={16} />} label={t('workflow.toolbar.addNode')}>
+          <ToolbarDropdown icon={<Plus size={16} />} title={t('workflow.toolbar.addNode')}>
             <DropdownItem
               icon={<Settings size={14} />}
               label="任务节点"
@@ -138,11 +141,9 @@ export const Toolbar = ({
               onClick={handleAddNestedNode}
             />
           </ToolbarDropdown>
-          <ToolbarDivider />
 
           <ToolbarButton icon={<Download size={16} />} onClick={onExport} title="导出 JSON" />
           <ToolbarButton icon={<Upload size={16} />} onClick={onImport} title="导入 JSON" />
-          <ToolbarDivider />
         </>
       )}
 
@@ -159,7 +160,7 @@ export const Toolbar = ({
       />
       <button
         onClick={onZoomReset}
-        className="min-w-[50px] h-8 px-2 text-sm text-gray-600 hover:bg-gray-100 rounded-md"
+        className="min-w-[50px] h-7 px-2 text-sm text-gray-600 hover:bg-gray-100 rounded-md"
       >
         {Math.round(zoom * 100)}%
       </button>
@@ -171,21 +172,24 @@ export const Toolbar = ({
 
       {onSearch && (
         <>
-          <ToolbarDivider />
           <input
             type="text"
             placeholder="搜索节点..."
             value={searchQuery}
             onChange={(e) => onSearch(e.target.value)}
-            className="h-8 px-3 text-sm border border-gray-200 rounded-md w-40 focus:outline-none focus:border-blue-500"
+            className="h-7 px-3 text-sm border border-gray-200 rounded-md w-32 focus:outline-none focus:border-blue-500"
           />
         </>
       )}
 
       {onToggleMinimap && (
         <>
-          <ToolbarDivider />
-          <ToolbarButton label="小地图" onClick={onToggleMinimap} active={showMinimap} />
+          <ToolbarButton
+            icon={<Map size={16} />}
+            onClick={onToggleMinimap}
+            active={showMinimap}
+            title="小地图"
+          />
         </>
       )}
     </div>
