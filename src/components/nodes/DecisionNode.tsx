@@ -3,7 +3,7 @@ import { Handle, Position, NodeProps } from '@xyflow/react';
 import { WorkflowNode, NodeStatus } from '../../types/workflow';
 import { useLocale } from '../../hooks/useLocale';
 import { clsx } from 'clsx';
-import { GitFork } from 'lucide-react';
+import { Split } from 'lucide-react';
 import NodeTooltip from '../common/NodeTooltip';
 
 const MAX_LABEL_LENGTH = 14;
@@ -42,7 +42,7 @@ const DecisionNode = ({ data, selected }: NodeProps<WorkflowNode>) => {
         )}
       >
         <div className="-rotate-45">
-          <GitFork size={20} className="text-gray-600" />
+          <Split size={20} className="text-gray-600" />
         </div>
       </div>
 

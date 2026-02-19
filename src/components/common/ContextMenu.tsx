@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { Settings, GitFork, Layers, Clipboard, Trash2 } from 'lucide-react';
+import { ClipboardList, Split, Layers, Clipboard, Trash2 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { NodeType } from '../../types/workflow';
 import { useLocale } from '../../hooks/useLocale';
@@ -106,13 +106,13 @@ export const CanvasContextMenu = ({
     {
       id: 'add-job',
       label: t('workflow.context.addJob') || '添加任务节点',
-      icon: <Settings size={14} />,
+      icon: <ClipboardList size={14} />,
       onClick: () => onAddNode(NodeType.JOB, position),
     },
     {
       id: 'add-decision',
       label: t('workflow.context.addDecision') || '添加判断节点',
-      icon: <GitFork size={14} />,
+      icon: <Split size={14} />,
       onClick: () => onAddNode(NodeType.DECISION, position),
     },
     {

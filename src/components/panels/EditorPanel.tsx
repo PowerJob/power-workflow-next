@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { clsx } from 'clsx';
-import { Settings, GitFork, Layers, X } from 'lucide-react';
+import { ClipboardList, Split, Layers, X } from 'lucide-react';
 import { WorkflowNodeData, NodeType, WorkflowNode } from '../../types/workflow';
 import { useLocale } from '../../hooks/useLocale';
 import { JobNodeForm, DecisionNodeForm, NestedWorkflowNodeForm } from './forms';
@@ -58,13 +58,13 @@ const NodeFormWrapper = ({ type, data, onChange, onValidationChange }: NodeFormW
 const getNodeIcon = (type: NodeType) => {
   switch (type) {
     case NodeType.JOB:
-      return Settings;
+      return ClipboardList;
     case NodeType.DECISION:
-      return GitFork;
+      return Split;
     case NodeType.NESTED_WORKFLOW:
       return Layers;
     default:
-      return Settings;
+      return ClipboardList;
   }
 };
 

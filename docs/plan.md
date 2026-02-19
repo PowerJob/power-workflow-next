@@ -121,7 +121,7 @@ power-workflow-next/
 | DecisionNode 组件 | 判断节点，菱形，80×80px | CSS `transform: rotate(45deg)` 实现菱形 |
 | NestedWorkflowNode 组件 | 嵌套工作流节点，矩形，带特殊图标 | 复用 JobNode 结构，仅图标不同 |
 | 节点样式实现 | 背景色、边框、阴影、选中/Hover 状态 | 使用 Tailwind 类名 + CSS 变量 |
-| 节点图标 | 齿轮、层叠方块图标（可使用 Lucide React） | 图标尺寸 16px，颜色 `#6B7280` |
+| 节点图标 | 任务用 ClipboardList、嵌套用 Layers、判断用 Split（Lucide React） | 图标尺寸 16px/20px，颜色 `#6B7280` |
 | 节点名称 Tooltip | 名称超过 14 字符时，hover 显示完整名称 | 使用 `@radix-ui/react-tooltip`，延迟 0.5 秒，最大宽度 300px |
 
 **注意事项**：

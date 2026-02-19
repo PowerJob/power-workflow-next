@@ -8,8 +8,8 @@ import {
   Plus,
   Download,
   Upload,
-  Settings,
-  GitFork,
+  ClipboardList,
+  Split,
   Layers,
   ArrowRight,
   ArrowDown,
@@ -126,12 +126,12 @@ export const Toolbar = ({
 
           <ToolbarDropdown icon={<Plus size={16} />} title={t('workflow.toolbar.addNode')}>
             <DropdownItem
-              icon={<Settings size={14} />}
+              icon={<ClipboardList size={14} />}
               label="任务节点"
               onClick={handleAddJobNode}
             />
             <DropdownItem
-              icon={<GitFork size={14} />}
+              icon={<Split size={14} />}
               label="判断节点"
               onClick={handleAddDecisionNode}
             />

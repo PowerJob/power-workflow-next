@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { Handle, Position, NodeProps } from '@xyflow/react';
-import { Settings } from 'lucide-react';
+import { ClipboardList } from 'lucide-react';
 import { WorkflowNode, NodeStatus } from '../../types/workflow';
 import { useLocale } from '../../hooks/useLocale';
 import { clsx } from 'clsx';
@@ -94,7 +94,7 @@ const JobNode = ({ data, selected, mode = 'edit' }: JobNodeProps) => {
             isView && data.status ? 'bg-white' : 'bg-gray-100',
           )}
         >
-          <Settings
+          <ClipboardList
             size={16}
             className={clsx('text-gray-600', isView && data.status && statusStyles.text)}
           />
