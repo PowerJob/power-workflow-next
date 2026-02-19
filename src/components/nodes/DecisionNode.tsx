@@ -18,7 +18,7 @@ const DecisionNode = ({ data, selected }: NodeProps<WorkflowNode>) => {
   const label = data.label || t('workflow.node.decision');
 
   return (
-    <div className="relative w-20 h-20 flex items-center justify-center">
+    <div className="relative w-20 h-14 flex items-center justify-center" style={{ width: 80, height: 56 }}>
       <Handle
         type="target"
         position={Position.Top}

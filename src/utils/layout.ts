@@ -9,7 +9,7 @@ interface LayoutOptions {
 
 const NODE_DIMENSIONS: Record<string, { width: number; height: number }> = {
   [NodeType.JOB]: { width: 200, height: 56 },
-  [NodeType.DECISION]: { width: 80, height: 80 },
+  [NodeType.DECISION]: { width: 80, height: 56 },
   [NodeType.NESTED_WORKFLOW]: { width: 200, height: 56 },
 };
 
