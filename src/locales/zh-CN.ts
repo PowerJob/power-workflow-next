@@ -19,6 +19,8 @@ export const zhCN = {
   'workflow.panel.target': '目标工作流',
   'workflow.panel.jobId': '任务ID',
   'workflow.panel.selectPlaceholder': '请选择',
+  'workflow.panel.searchPlaceholder': '输入关键字过滤',
+  'workflow.panel.searchNoResults': '无匹配项',
   'workflow.panel.jobOptionsEmpty': '暂无可选任务ID，请先配置任务目录',
   'workflow.panel.workflowOptionsEmpty': '暂无可选工作流ID，请先配置工作流目录',
   'workflow.panel.legacyValue': '历史值',

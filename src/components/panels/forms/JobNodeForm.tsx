@@ -201,6 +201,9 @@ export const JobNodeForm = ({ data, onChange, onValidationChange, jobOptions = [
           onChange={(e) => handleJobIdSelect(e.target.value)}
           onBlur={() => handleBlur('jobId')}
           placeholder={t('workflow.panel.selectPlaceholder')}
+          searchable
+          searchPlaceholder={t('workflow.panel.searchPlaceholder')}
+          noResultsText={t('workflow.panel.searchNoResults')}
           disabled={!hasAvailableJobOptions}
           error={!!errors.jobId && touched.jobId}
         />

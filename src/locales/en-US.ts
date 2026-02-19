@@ -21,6 +21,8 @@ export const enUS: Record<LocaleKey, string> = {
   'workflow.panel.target': 'Target Workflow',
   'workflow.panel.jobId': 'Job ID',
   'workflow.panel.selectPlaceholder': 'Please select',
+  'workflow.panel.searchPlaceholder': 'Type to filter',
+  'workflow.panel.searchNoResults': 'No matching options',
   'workflow.panel.jobOptionsEmpty': 'No job IDs available. Configure job catalog first.',
   'workflow.panel.workflowOptionsEmpty':
     'No workflow IDs available. Configure workflow catalog first.',

@@ -179,6 +179,9 @@ export const NestedWorkflowNodeForm = ({
           onChange={(e) => handleWorkflowIdSelect(e.target.value)}
           onBlur={() => handleBlur('targetWorkflowId')}
           placeholder={t('workflow.panel.selectPlaceholder')}
+          searchable
+          searchPlaceholder={t('workflow.panel.searchPlaceholder')}
+          noResultsText={t('workflow.panel.searchNoResults')}
           disabled={!hasAvailableWorkflowOptions}
           error={!!errors.targetWorkflowId && touched.targetWorkflowId}
         />

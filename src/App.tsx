@@ -1,7 +1,15 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo, useState, type MouseEvent as ReactMouseEvent } from 'react';
 import { addEdge, Connection, useNodesState, useEdgesState } from '@xyflow/react';
 import WorkflowCanvas from './components/WorkflowCanvas';
-import { WorkflowNode, WorkflowEdge, NodeType, NodeStatus } from './types/workflow';
+import { EditorPanel } from './components/panels/EditorPanel';
+import {
+  WorkflowNode,
+  WorkflowEdge,
+  WorkflowNodeData,
+  WorkflowReferenceOption,
+  NodeType,
+  NodeStatus,
+} from './types/workflow';
 
 const initialNodes: WorkflowNode[] = [
   {
@@ -30,23 +38,71 @@ const initialEdges: WorkflowEdge[] = [
 ];
 
 function App() {
-  const [nodes, , onNodesChange] = useNodesState(initialNodes);
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const editingNode = selectedNodeId ? nodes.find((n) => n.id === selectedNodeId) ?? null : null;
+  const jobOptions = useMemo<WorkflowReferenceOption[]>(
+    () => [
+      { value: 101, label: '101 - Start Job' },
+      { value: 102, label: '102 - Data Prepare' },
+      { value: 103, label: '103 - Data Export' },
+    ],
+    [],
+  );
+  const workflowOptions = useMemo<WorkflowReferenceOption[]>(
+    () => [
+      { value: 201, label: '201 - ETL Workflow' },
+      { value: 202, label: '202 - Sub Workflow' },
+      { value: 203, label: '203 - QA Workflow' },
+    ],
+    [],
+  );
 
   const onConnect = useCallback(
     (params: Connection) => setEdges((eds) => addEdge(params, eds)),
     [setEdges],
   );
 
+  const handleNodeClick = useCallback((_: ReactMouseEvent, node: WorkflowNode) => {
+    setSelectedNodeId(node.id);
+  }, []);
+
+  const handlePaneClick = useCallback(() => {
+    setSelectedNodeId(null);
+  }, []);
+
+  const handleClosePanel = useCallback(() => {
+    setSelectedNodeId(null);
+  }, []);
+
+  const handleSaveNode = useCallback(
+    (nodeId: string, data: WorkflowNodeData) => {
+      setNodes((nds) => nds.map((n) => (n.id === nodeId ? { ...n, data } : n)));
+      setSelectedNodeId(null);
+    },
+    [setNodes],
+  );
+
   return (
-    <div style={{ width: '100vw', height: '100vh' }}>
+    <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
       <WorkflowCanvas
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onNodeClick={handleNodeClick}
+        onPaneClick={handlePaneClick}
         mode="edit"
+      />
+      <EditorPanel
+        node={editingNode}
+        open={!!editingNode}
+        onClose={handleClosePanel}
+        onSave={handleSaveNode}
+        jobOptions={jobOptions}
+        workflowOptions={workflowOptions}
       />
     </div>
   );
