@@ -11,6 +11,30 @@ export interface EdgeHandlesOptions {
   direction?: 'horizontal' | 'vertical';
 }
 
+export interface SnapEdgeHandlesOptions extends EdgeHandlesOptions {
+  /**
+   * true: 优先采用 direction；当节点相对位置与方向明显不一致时兜底到相对位置
+   * false: 仅按相对位置选择
+   */
+  preferDirection?: boolean;
+}
+
+const AXIS_SWITCH_THRESHOLD = 1.15;
+
+const getRelativeHandlesForEdge = (
+  sourceNode: WorkflowNode,
+  targetNode: WorkflowNode,
+): { sourceHandleId: SourceHandleId; targetHandleId: TargetHandleId } => {
+  const dx = targetNode.position.x - sourceNode.position.x;
+  const dy = targetNode.position.y - sourceNode.position.y;
+
+  if (Math.abs(dx) >= Math.abs(dy)) {
+    return { sourceHandleId: 'right', targetHandleId: 'left' };
+  }
+
+  return { sourceHandleId: 'bottom', targetHandleId: 'top' };
+};
+
 /**
  * 为单条边根据布局方向返回固定的 sourceHandle / targetHandle
  * - horizontal：源 right，目标 left
@@ -26,6 +50,38 @@ export function getOptimalHandlesForEdge(
     return { sourceHandleId: 'bottom', targetHandleId: 'top' };
   }
   return { sourceHandleId: 'right', targetHandleId: 'left' };
+}
+
+/**
+ * 连线吸附用锚点选择：
+ * - 优先 direction（与自动布局保持一致）
+ * - 当节点相对位置明显偏离方向时，自动切换到相对位置结果
+ */
+export function getSnapHandlesForEdge(
+  sourceNode: WorkflowNode,
+  targetNode: WorkflowNode,
+  options: SnapEdgeHandlesOptions = {},
+): { sourceHandleId: SourceHandleId; targetHandleId: TargetHandleId } {
+  const { direction, preferDirection = true } = options;
+  const relative = getRelativeHandlesForEdge(sourceNode, targetNode);
+
+  if (!preferDirection || !direction) {
+    return relative;
+  }
+
+  const byDirection = getOptimalHandlesForEdge(sourceNode, targetNode, { direction });
+  const dx = Math.abs(targetNode.position.x - sourceNode.position.x);
+  const dy = Math.abs(targetNode.position.y - sourceNode.position.y);
+
+  if (direction === 'horizontal' && dy > dx * AXIS_SWITCH_THRESHOLD) {
+    return relative;
+  }
+
+  if (direction === 'vertical' && dx > dy * AXIS_SWITCH_THRESHOLD) {
+    return relative;
+  }
+
+  return byDirection;
 }
 
 /**

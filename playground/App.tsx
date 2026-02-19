@@ -11,7 +11,7 @@ import {
   WorkflowNodeData,
   NodeType,
   assignOptimalHandles,
-  getOptimalHandlesForEdge,
+  getSnapHandlesForEdge,
   generateNodeId,
   createDefaultNodeData,
   exportToJSON,
@@ -167,7 +167,7 @@ const PlaygroundInner = () => {
       const targetNode = nodes.find((n) => n.id === params.target);
       const { sourceHandleId, targetHandleId } =
         sourceNode && targetNode
-          ? getOptimalHandlesForEdge(sourceNode, targetNode, {
+          ? getSnapHandlesForEdge(sourceNode, targetNode, {
               direction: layoutDirection,
             })
           : {};
@@ -351,6 +351,7 @@ const PlaygroundInner = () => {
           onPaneClick={handlePaneClick}
           mode={mode}
           defaultLocale={locale}
+          connectSnapDirection={layoutDirection}
           showToolbar
           onAutoLayout={handleToolbarAutoLayout}
           onAddNode={handleAddNode}

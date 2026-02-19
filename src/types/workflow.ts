@@ -1,4 +1,4 @@
-import type { Node, Edge, ReactFlowProps } from '@xyflow/react';
+import type { Node, Edge, ReactFlowProps, Connection } from '@xyflow/react';
 
 export enum NodeType {
   JOB = 'JOB',
@@ -55,11 +55,12 @@ export interface WorkflowNextProps extends Omit<
   mode?: 'edit' | 'view';
   defaultLocale?: 'zh-CN' | 'en-US';
 
-  onNodesChange?: (changes: unknown) => void;
-  onEdgesChange?: (changes: unknown) => void;
-  onConnect?: (connection: unknown) => void;
+  onNodesChange?: ReactFlowProps<WorkflowNode, WorkflowEdge>['onNodesChange'];
+  onEdgesChange?: ReactFlowProps<WorkflowNode, WorkflowEdge>['onEdgesChange'];
+  onConnect?: (connection: Connection) => void;
   onNodeDataChange?: (nodeId: string, data: WorkflowNodeData) => void;
   onValidationError?: (errors: unknown[]) => void;
+  connectSnapDirection?: 'horizontal' | 'vertical';
 
   /** 是否在画布上方显示工具栏 */
   showToolbar?: boolean;

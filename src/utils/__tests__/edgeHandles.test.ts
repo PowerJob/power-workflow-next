@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   getOptimalHandlesForEdge,
+  getSnapHandlesForEdge,
   assignOptimalHandles,
 } from '../edgeHandles';
 import { NodeType, type WorkflowNode, type WorkflowEdge } from '../../types/workflow';
@@ -119,6 +120,43 @@ describe('edgeHandles', () => {
     it('should return empty array when edges is empty', () => {
       const nodes = [createMockNode('a', NodeType.JOB, { x: 0, y: 0 })];
       expect(assignOptimalHandles(nodes, [])).toEqual([]);
+    });
+  });
+
+  describe('getSnapHandlesForEdge', () => {
+    it('should prefer horizontal direction by default', () => {
+      const source = createMockNode('a', NodeType.JOB, { x: 100, y: 100 });
+      const target = createMockNode('b', NodeType.JOB, { x: 120, y: 380 });
+      const result = getSnapHandlesForEdge(source, target, { direction: 'horizontal' });
+      expect(result.sourceHandleId).toBe('bottom');
+      expect(result.targetHandleId).toBe('top');
+    });
+
+    it('should fallback to relative horizontal when vertical direction is strongly mismatched', () => {
+      const source = createMockNode('a', NodeType.JOB, { x: 100, y: 100 });
+      const target = createMockNode('b', NodeType.JOB, { x: 420, y: 120 });
+      const result = getSnapHandlesForEdge(source, target, { direction: 'vertical' });
+      expect(result.sourceHandleId).toBe('right');
+      expect(result.targetHandleId).toBe('left');
+    });
+
+    it('should use relative position when direction is missing', () => {
+      const source = createMockNode('a', NodeType.JOB, { x: 100, y: 100 });
+      const target = createMockNode('b', NodeType.JOB, { x: 110, y: 260 });
+      const result = getSnapHandlesForEdge(source, target);
+      expect(result.sourceHandleId).toBe('bottom');
+      expect(result.targetHandleId).toBe('top');
+    });
+
+    it('should use relative position when preferDirection is false', () => {
+      const source = createMockNode('a', NodeType.JOB, { x: 100, y: 100 });
+      const target = createMockNode('b', NodeType.JOB, { x: 420, y: 120 });
+      const result = getSnapHandlesForEdge(source, target, {
+        direction: 'vertical',
+        preferDirection: false,
+      });
+      expect(result.sourceHandleId).toBe('right');
+      expect(result.targetHandleId).toBe('left');
     });
   });
 });

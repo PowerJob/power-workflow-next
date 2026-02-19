@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import {
   ReactFlow,
   Background,
@@ -19,6 +19,7 @@ import { WorkflowNextProps, NodeType } from '../../types/workflow';
 import { useLocale } from '../../hooks/useLocale';
 import { LocaleProvider } from '../../contexts/LocaleContext';
 import type { Connection } from '@xyflow/react';
+import { getSnapHandlesForEdge } from '../../utils/edgeHandles';
 
 interface CanvasToolbarProps {
   mode: 'edit' | 'view';
@@ -92,12 +93,16 @@ const WorkflowCanvasInner = ({
   onImport,
   showMinimap = true,
   onToggleMinimap,
+  connectSnapDirection = 'horizontal',
   fitView: fitViewProp,
   isValidConnection: userIsValidConnection,
   ...props
 }: WorkflowNextProps) => {
   const { t } = useLocale();
+  const { screenToFlowPosition } = useReactFlow();
   const isView = mode === 'view';
+  const pendingConnectionRef = useRef<{ source: string; sourceHandle?: string } | null>(null);
+  const nativeConnectCommittedRef = useRef(false);
 
   const isValidConnection = useCallback(
     (connection: Connection) => {
@@ -109,6 +114,100 @@ const WorkflowCanvasInner = ({
       return userIsValidConnection ? userIsValidConnection(connection) : true;
     },
     [nodes, edges, userIsValidConnection],
+  );
+
+  const handleConnect = useCallback(
+    (connection: Connection) => {
+      nativeConnectCommittedRef.current = true;
+      onConnect?.(connection);
+    },
+    [onConnect],
+  );
+
+  const handleConnectStart = useCallback(
+    (
+      _event: MouseEvent | TouchEvent,
+      params: { nodeId: string | null; handleId: string | null; handleType?: string | null },
+    ) => {
+      nativeConnectCommittedRef.current = false;
+      if (params.handleType !== 'source' || !params.nodeId) {
+        pendingConnectionRef.current = null;
+        return;
+      }
+      pendingConnectionRef.current = {
+        source: params.nodeId,
+        sourceHandle: params.handleId ?? undefined,
+      };
+    },
+    [],
+  );
+
+  const handleConnectEnd = useCallback(
+    (event: MouseEvent | TouchEvent) => {
+      const pending = pendingConnectionRef.current;
+      pendingConnectionRef.current = null;
+
+      if (!pending || nativeConnectCommittedRef.current || !nodes?.length || !onConnect) {
+        return;
+      }
+
+      const point =
+        'changedTouches' in event && event.changedTouches.length > 0
+          ? {
+              x: event.changedTouches[0].clientX,
+              y: event.changedTouches[0].clientY,
+            }
+          : 'clientX' in event
+            ? { x: event.clientX, y: event.clientY }
+            : null;
+
+      if (!point) return;
+
+      const flowPoint = screenToFlowPosition(point);
+      const sourceNode = nodes.find((node) => node.id === pending.source);
+      if (!sourceNode) return;
+
+      const targetNode = nodes.find((node) => {
+        if (node.id === pending.source) return false;
+        const width = node.width ?? (node.data?.type === NodeType.DECISION ? 80 : 200);
+        const height = node.height ?? 56;
+        return (
+          flowPoint.x >= node.position.x &&
+          flowPoint.x <= node.position.x + width &&
+          flowPoint.y >= node.position.y &&
+          flowPoint.y <= node.position.y + height
+        );
+      });
+
+      if (!targetNode) return;
+
+      const { sourceHandleId, targetHandleId } = getSnapHandlesForEdge(sourceNode, targetNode, {
+        direction: connectSnapDirection,
+      });
+
+      const connection: Connection = {
+        source: pending.source,
+        sourceHandle: pending.sourceHandle ?? sourceHandleId,
+        target: targetNode.id,
+        targetHandle: targetHandleId,
+      };
+
+      if (!isValidConnection(connection)) return;
+
+      const duplicated =
+        edges?.some(
+          (edge) =>
+            edge.source === connection.source &&
+            edge.target === connection.target &&
+            (edge.sourceHandle ?? undefined) === (connection.sourceHandle ?? undefined) &&
+            (edge.targetHandle ?? undefined) === (connection.targetHandle ?? undefined),
+        ) ?? false;
+
+      if (duplicated) return;
+
+      onConnect(connection);
+    },
+    [nodes, edges, onConnect, screenToFlowPosition, connectSnapDirection, isValidConnection],
   );
 
   return (
@@ -133,7 +232,9 @@ const WorkflowCanvasInner = ({
             edges={edges}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
+            onConnect={handleConnect}
+            onConnectStart={handleConnectStart}
+            onConnectEnd={handleConnectEnd}
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
             defaultEdgeOptions={{

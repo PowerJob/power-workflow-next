@@ -33,13 +33,14 @@
     "**/*.css"
   ],
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host 127.0.0.1",
     "build": "tsc -b && vite build",
     "build:lib": "tsc -b && vite build --mode lib",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
+    "regression:connection-snap": "node playground/regression/connection-snap/regression-test-final.mjs",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build:lib && npm run test"
   },
