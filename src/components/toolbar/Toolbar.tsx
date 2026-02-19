@@ -108,22 +108,6 @@ export const Toolbar = ({
             title={t('workflow.toolbar.redo')}
           />
 
-          <ToolbarDropdown
-            icon={<LayoutDashboard size={16} />}
-            title={t('workflow.toolbar.layout')}
-          >
-            <DropdownItem
-              icon={<ArrowRight size={14} />}
-              label="横向布局"
-              onClick={handleHorizontalLayout}
-            />
-            <DropdownItem
-              icon={<ArrowDown size={14} />}
-              label="纵向布局"
-              onClick={handleVerticalLayout}
-            />
-          </ToolbarDropdown>
-
           <ToolbarDropdown icon={<Plus size={16} />} title={t('workflow.toolbar.addNode')}>
             <DropdownItem
               icon={<ClipboardList size={14} />}
@@ -146,6 +130,22 @@ export const Toolbar = ({
           <ToolbarButton icon={<Upload size={16} />} onClick={onImport} title="导入 JSON" />
         </>
       )}
+
+      <ToolbarDropdown
+        icon={<LayoutDashboard size={16} />}
+        title={t('workflow.toolbar.layout')}
+      >
+        <DropdownItem
+          icon={<ArrowRight size={14} />}
+          label="横向布局"
+          onClick={handleHorizontalLayout}
+        />
+        <DropdownItem
+          icon={<ArrowDown size={14} />}
+          label="纵向布局"
+          onClick={handleVerticalLayout}
+        />
+      </ToolbarDropdown>
 
       <ToolbarButton
         icon={<Maximize2 size={16} />}

@@ -6,6 +6,7 @@ import { useLocale } from '../../hooks/useLocale';
 import { clsx } from 'clsx';
 import { Split } from 'lucide-react';
 import NodeTooltip from '../common/NodeTooltip';
+import { getNodeStatusText, getNodeStatusTone } from './statusVisuals';
 
 const MAX_LABEL_LENGTH = 14;
 
@@ -17,29 +18,48 @@ const truncateLabel = (label: string, maxLen: number): string => {
 const DecisionNode = ({ data, selected }: NodeProps<WorkflowNode>) => {
   const { t } = useLocale();
   const label = data.label || t('workflow.node.decision');
+  const statusStyles = getNodeStatusTone(data.status);
+  const statusText = getNodeStatusText(data.status, t);
+  const isRunning = data.status === NodeStatus.RUNNING;
 
   return (
     <div className="relative w-20 h-14 flex items-center justify-center" style={{ width: 80, height: 56 }}>
       <WorkflowHandle type="target" position={Position.Top} id="top" className="z-10" />
       <WorkflowHandle type="target" position={Position.Left} id="left" className="z-10" />
 
+      {statusText && (
+        <div
+          className={clsx(
+            'absolute -top-3 left-1/2 -translate-x-1/2 z-20 max-w-[72px] px-2 py-0.5 rounded-full text-[10px] font-semibold truncate',
+            statusStyles.pill,
+          )}
+          title={statusText}
+        >
+          {statusText}
+        </div>
+      )}
+
       <div
         className={clsx(
-          'absolute w-14 h-14 bg-white border-2 transition-all transform rotate-45 flex items-center justify-center',
-          selected ? 'border-blue-500 shadow-md' : 'border-gray-200 hover:border-blue-300',
-          data.status === NodeStatus.SUCCESS && 'border-green-500 bg-green-50',
-          data.status === NodeStatus.FAILED && 'border-red-500 bg-red-50',
-          data.status === NodeStatus.RUNNING && 'border-blue-500 bg-blue-50 animate-pulse',
+          'absolute w-14 h-14 border-2 transition-all transform rotate-45 flex items-center justify-center',
+          statusStyles.bg,
+          statusStyles.border,
+          selected && 'ring-2 ring-blue-200 shadow-md',
+          !selected && 'hover:border-blue-300',
+          isRunning && 'node-running',
         )}
       >
-        <div className="-rotate-45">
-          <Split size={20} className="text-gray-600" />
+        <div className="-rotate-45 relative">
+          {isRunning && <span className="node-running-halo" aria-hidden />}
+          <div className={clsx('relative z-10 p-1 rounded', statusStyles.iconBg)}>
+            <Split size={18} className={clsx('text-gray-600', data.status && statusStyles.iconText)} />
+          </div>
         </div>
       </div>
 
       <div className="absolute -bottom-6 w-32 text-center">
         <NodeTooltip content={label} maxLength={MAX_LABEL_LENGTH}>
-          <div className="text-xs text-gray-600 truncate">
+          <div className={clsx('text-xs truncate', data.status ? statusStyles.text : 'text-gray-600')}>
             {truncateLabel(label, MAX_LABEL_LENGTH)}
           </div>
         </NodeTooltip>

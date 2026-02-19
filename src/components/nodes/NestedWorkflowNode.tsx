@@ -6,6 +6,7 @@ import { WorkflowNode, NodeStatus } from '../../types/workflow';
 import { useLocale } from '../../hooks/useLocale';
 import { clsx } from 'clsx';
 import NodeTooltip from '../common/NodeTooltip';
+import { getNodeStatusText, getNodeStatusTone } from './statusVisuals';
 
 const MAX_LABEL_LENGTH = 14;
 
@@ -17,25 +18,47 @@ const truncateLabel = (label: string, maxLen: number): string => {
 const NestedWorkflowNode = ({ data, selected }: NodeProps<WorkflowNode>) => {
   const { t } = useLocale();
   const label = data.label || t('workflow.node.nested');
+  const statusStyles = getNodeStatusTone(data.status);
+  const statusText = getNodeStatusText(data.status, t);
+  const isRunning = data.status === NodeStatus.RUNNING;
 
   return (
     <div
       className={clsx(
-        'relative flex items-center bg-white rounded-md border-2 transition-all',
-        selected ? 'border-blue-500 shadow-md' : 'border-gray-200 hover:border-blue-300',
+        'relative flex items-center rounded-md border-2 transition-all',
+        statusStyles.bg,
+        statusStyles.border,
+        selected && 'ring-2 ring-blue-200 shadow-md',
+        !selected && 'hover:border-blue-300',
+        isRunning && 'node-running',
         'w-[200px] h-[56px] px-3',
       )}
     >
       <WorkflowHandle type="target" position={Position.Top} id="top" />
       <WorkflowHandle type="target" position={Position.Left} id="left" />
 
+      {statusText && (
+        <div
+          className={clsx(
+            'absolute top-2 right-2 max-w-[84px] px-2 py-0.5 rounded-full text-[10px] font-semibold truncate',
+            statusStyles.pill,
+          )}
+          title={statusText}
+        >
+          {statusText}
+        </div>
+      )}
+
       <div className="flex items-center gap-2 w-full overflow-hidden">
-        <div className="flex-shrink-0 p-1 bg-indigo-100 rounded">
-          <Layers size={16} className="text-indigo-600" />
+        <div className="relative flex-shrink-0">
+          {isRunning && <span className="node-running-halo" aria-hidden />}
+          <div className={clsx('relative z-10 p-1 rounded', statusStyles.iconBg)}>
+            <Layers size={16} className={clsx('text-indigo-600', data.status && statusStyles.iconText)} />
+          </div>
         </div>
         <div className="flex-grow min-w-0">
           <NodeTooltip content={label} maxLength={MAX_LABEL_LENGTH}>
-            <div className="text-sm font-medium text-gray-700 truncate">
+            <div className={clsx('text-sm font-medium truncate', data.status ? statusStyles.text : 'text-gray-700')}>
               {truncateLabel(label, MAX_LABEL_LENGTH)}
             </div>
           </NodeTooltip>
@@ -43,18 +66,6 @@ const NestedWorkflowNode = ({ data, selected }: NodeProps<WorkflowNode>) => {
             <div className="text-xs text-gray-400 truncate">Ref: #{data.targetWorkflowId}</div>
           )}
         </div>
-        {data.status && (
-          <div
-            className={clsx(
-              'w-2 h-2 rounded-full',
-              data.status === NodeStatus.SUCCESS && 'bg-green-500',
-              data.status === NodeStatus.FAILED && 'bg-red-500',
-              data.status === NodeStatus.RUNNING && 'bg-blue-500',
-              data.status === NodeStatus.WAITING && 'bg-orange-400',
-              data.status === NodeStatus.STOPPED && 'bg-gray-400',
-            )}
-          />
-        )}
       </div>
 
       <WorkflowHandle type="source" position={Position.Right} id="right" />

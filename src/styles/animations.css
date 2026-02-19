@@ -1,17 +1,62 @@
 @keyframes breathing {
-  0%, 100% {
-    border-color: #1890FF;
-    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.3);
+  0%,
+  100% {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.4), 0 0 0 4px rgba(59, 130, 246, 0.1);
   }
   50% {
-    border-color: #69C0FF;
-    box-shadow: 0 0 0 4px rgba(24, 144, 255, 0.5);
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.5), 0 0 0 8px rgba(59, 130, 246, 0.2);
+  }
+}
+
+@keyframes stripe-flow {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 28px 0;
+  }
+}
+
+@keyframes haloRipple {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.6;
+    border-width: 4px;
+  }
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
+    border-width: 0px;
   }
 }
 
 .node-running {
-  animation: breathing 2s ease-in-out infinite;
-  will-change: border-color, box-shadow;
+  will-change: border-color, box-shadow, background-position;
+  background-image: linear-gradient(
+    45deg,
+    rgba(59, 130, 246, 0.08) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(59, 130, 246, 0.08) 50%,
+    rgba(59, 130, 246, 0.08) 75%,
+    transparent 75%,
+    transparent
+  );
+  background-size: 28px 28px;
+  animation: breathing 2s ease-in-out infinite, stripe-flow 1s linear infinite;
+}
+
+.node-running-halo {
+  position: absolute;
+  inset: -2px;
+  border-radius: 9999px;
+  border: 2px solid rgba(59, 130, 246, 0.4);
+  background: transparent;
+  animation: haloRipple 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  pointer-events: none;
+  z-index: 0;
 }
 
 .node-highlighted {
@@ -23,23 +68,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .node-running {
-    animation: none;
-  }
-}
-  50% {
-    border-color: #69c0ff;
-    box-shadow: 0 0 0 4px rgba(24, 144, 255, 0.5);
-  }
-}
-
-.node-running {
-  animation: breathing 2s ease-in-out infinite;
-  will-change: border-color, box-shadow;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .node-running {
+  .node-running,
+  .node-running-halo {
     animation: none;
   }
 }
