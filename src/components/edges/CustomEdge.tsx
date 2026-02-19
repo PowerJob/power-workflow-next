@@ -13,7 +13,8 @@ import { WorkflowEdge, WorkflowEdgeData, NodeType } from '../../types/workflow';
 import { clsx } from 'clsx';
 
 type PropertyType = '' | 'true' | 'false';
-const ANCHOR_GAP = 8;
+/** 边线相对锚点中心的偏移（像素），越小边越贴近锚点 */
+const ANCHOR_GAP = 2;
 
 const offsetFromAnchor = (x: number, y: number, position: Position | undefined, gap: number) => {
   switch (position) {

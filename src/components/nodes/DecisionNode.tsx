@@ -1,5 +1,6 @@
 import { memo } from 'react';
-import { Handle, Position, NodeProps } from '@xyflow/react';
+import { Position, NodeProps } from '@xyflow/react';
+import WorkflowHandle from './WorkflowHandle';
 import { WorkflowNode, NodeStatus } from '../../types/workflow';
 import { useLocale } from '../../hooks/useLocale';
 import { clsx } from 'clsx';
@@ -19,18 +20,8 @@ const DecisionNode = ({ data, selected }: NodeProps<WorkflowNode>) => {
 
   return (
     <div className="relative w-20 h-14 flex items-center justify-center" style={{ width: 80, height: 56 }}>
-      <Handle
-        type="target"
-        position={Position.Top}
-        id="top"
-        className="w-2 h-2 !bg-blue-500 border-2 border-white z-10"
-      />
-      <Handle
-        type="target"
-        position={Position.Left}
-        id="left"
-        className="w-2 h-2 !bg-blue-500 border-2 border-white z-10"
-      />
+      <WorkflowHandle type="target" position={Position.Top} id="top" className="z-10" />
+      <WorkflowHandle type="target" position={Position.Left} id="left" className="z-10" />
 
       <div
         className={clsx(
@@ -54,18 +45,8 @@ const DecisionNode = ({ data, selected }: NodeProps<WorkflowNode>) => {
         </NodeTooltip>
       </div>
 
-      <Handle
-        type="source"
-        position={Position.Right}
-        id="right"
-        className="w-2 h-2 !bg-blue-500 border-2 border-white z-10"
-      />
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        id="bottom"
-        className="w-2 h-2 !bg-blue-500 border-2 border-white z-10"
-      />
+      <WorkflowHandle type="source" position={Position.Right} id="right" className="z-10" />
+      <WorkflowHandle type="source" position={Position.Bottom} id="bottom" className="z-10" />
     </div>
   );
 };

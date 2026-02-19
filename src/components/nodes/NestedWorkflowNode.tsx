@@ -1,5 +1,6 @@
 import { memo } from 'react';
-import { Handle, Position, NodeProps } from '@xyflow/react';
+import { Position, NodeProps } from '@xyflow/react';
+import WorkflowHandle from './WorkflowHandle';
 import { Layers } from 'lucide-react';
 import { WorkflowNode, NodeStatus } from '../../types/workflow';
 import { useLocale } from '../../hooks/useLocale';
@@ -25,18 +26,8 @@ const NestedWorkflowNode = ({ data, selected }: NodeProps<WorkflowNode>) => {
         'w-[200px] h-[56px] px-3',
       )}
     >
-      <Handle
-        type="target"
-        position={Position.Top}
-        id="top"
-        className="w-2 h-2 !bg-blue-500 border-2 border-white"
-      />
-      <Handle
-        type="target"
-        position={Position.Left}
-        id="left"
-        className="w-2 h-2 !bg-blue-500 border-2 border-white"
-      />
+      <WorkflowHandle type="target" position={Position.Top} id="top" />
+      <WorkflowHandle type="target" position={Position.Left} id="left" />
 
       <div className="flex items-center gap-2 w-full overflow-hidden">
         <div className="flex-shrink-0 p-1 bg-indigo-100 rounded">
@@ -66,18 +57,8 @@ const NestedWorkflowNode = ({ data, selected }: NodeProps<WorkflowNode>) => {
         )}
       </div>
 
-      <Handle
-        type="source"
-        position={Position.Right}
-        id="right"
-        className="w-2 h-2 !bg-blue-500 border-2 border-white"
-      />
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        id="bottom"
-        className="w-2 h-2 !bg-blue-500 border-2 border-white"
-      />
+      <WorkflowHandle type="source" position={Position.Right} id="right" />
+      <WorkflowHandle type="source" position={Position.Bottom} id="bottom" />
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import { memo } from 'react';
-import { Handle, Position, NodeProps } from '@xyflow/react';
+import { Position, NodeProps } from '@xyflow/react';
+import WorkflowHandle from './WorkflowHandle';
 import { ClipboardList } from 'lucide-react';
 import { WorkflowNode, NodeStatus } from '../../types/workflow';
 import { useLocale } from '../../hooks/useLocale';
@@ -74,18 +75,8 @@ const JobNode = ({ data, selected, mode = 'edit' }: JobNodeProps) => {
         isRunning && 'node-running',
       )}
     >
-      <Handle
-        type="target"
-        position={Position.Top}
-        id="top"
-        className="w-2 h-2 !bg-blue-500 border-2 border-white"
-      />
-      <Handle
-        type="target"
-        position={Position.Left}
-        id="left"
-        className="w-2 h-2 !bg-blue-500 border-2 border-white"
-      />
+      <WorkflowHandle type="target" position={Position.Top} id="top" />
+      <WorkflowHandle type="target" position={Position.Left} id="left" />
 
       <div className="flex items-center gap-2 w-full overflow-hidden flex-1">
         <div
@@ -137,18 +128,8 @@ const JobNode = ({ data, selected, mode = 'edit' }: JobNodeProps) => {
         />
       )}
 
-      <Handle
-        type="source"
-        position={Position.Right}
-        id="right"
-        className="w-2 h-2 !bg-blue-500 border-2 border-white"
-      />
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        id="bottom"
-        className="w-2 h-2 !bg-blue-500 border-2 border-white"
-      />
+      <WorkflowHandle type="source" position={Position.Right} id="right" />
+      <WorkflowHandle type="source" position={Position.Bottom} id="bottom" />
     </div>
   );
 
