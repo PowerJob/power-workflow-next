@@ -15,7 +15,11 @@ const truncateLabel = (label: string, maxLen: number): string => {
   return label.slice(0, maxLen) + '...';
 };
 
-const NestedWorkflowNode = ({ data, selected }: NodeProps<WorkflowNode>) => {
+interface NestedWorkflowNodeProps extends NodeProps<WorkflowNode> {
+  mode?: 'edit' | 'view';
+}
+
+const NestedWorkflowNode = ({ data, selected }: NestedWorkflowNodeProps) => {
   const { t } = useLocale();
   const label = data.label || t('workflow.node.nested');
   const statusStyles = getNodeStatusTone(data.status);

@@ -15,7 +15,11 @@ const truncateLabel = (label: string, maxLen: number): string => {
   return label.slice(0, maxLen) + '...';
 };
 
-const DecisionNode = ({ data, selected }: NodeProps<WorkflowNode>) => {
+interface DecisionNodeProps extends NodeProps<WorkflowNode> {
+  mode?: 'edit' | 'view';
+}
+
+const DecisionNode = ({ data, selected }: DecisionNodeProps) => {
   const { t } = useLocale();
   const label = data.label || t('workflow.node.decision');
   const statusStyles = getNodeStatusTone(data.status);

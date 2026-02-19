@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import {
   ReactFlow,
   Background,
@@ -11,7 +11,7 @@ import {
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import '@xyflow/react/dist/style.css';
 
-import { nodeTypes } from '../nodes';
+import { JobNode, DecisionNode, NestedWorkflowNode } from '../nodes';
 import { edgeTypes } from '../edges';
 import { Toolbar } from '../toolbar';
 import { WorkflowMinimap } from '../common/WorkflowMinimap';
@@ -101,6 +101,22 @@ const WorkflowCanvasInner = ({
   const { t } = useLocale();
   const { screenToFlowPosition } = useReactFlow();
   const isView = mode === 'view';
+
+  const nodeTypesWithMode = useMemo(
+    () => ({
+      [NodeType.JOB]: (props: import('@xyflow/react').NodeProps<import('../../types/workflow').WorkflowNode>) => (
+        <JobNode {...props} mode={mode} />
+      ),
+      [NodeType.DECISION]: (props: import('@xyflow/react').NodeProps<import('../../types/workflow').WorkflowNode>) => (
+        <DecisionNode {...props} mode={mode} />
+      ),
+      [NodeType.NESTED_WORKFLOW]: (props: import('@xyflow/react').NodeProps<import('../../types/workflow').WorkflowNode>) => (
+        <NestedWorkflowNode {...props} mode={mode} />
+      ),
+    }),
+    [mode],
+  );
+
   const pendingConnectionRef = useRef<{ source: string; sourceHandle?: string } | null>(null);
   const nativeConnectCommittedRef = useRef(false);
 
@@ -235,7 +251,7 @@ const WorkflowCanvasInner = ({
             onConnect={handleConnect}
             onConnectStart={handleConnectStart}
             onConnectEnd={handleConnectEnd}
-            nodeTypes={nodeTypes}
+            nodeTypes={nodeTypesWithMode}
             edgeTypes={edgeTypes}
             defaultEdgeOptions={{
               markerEnd: {
