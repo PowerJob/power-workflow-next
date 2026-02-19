@@ -8,6 +8,7 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react()],
+    root: isLib ? undefined : path.resolve(__dirname, 'playground'),
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
@@ -19,6 +20,7 @@ export default defineConfig(({ mode }) => {
       setupFiles: './src/setupTests.ts',
     },
     ...(isLib && {
+      root: undefined,
       build: {
         lib: {
           entry: path.resolve(__dirname, 'src/index.ts'),

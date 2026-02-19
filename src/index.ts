@@ -56,6 +56,7 @@ export { useNodeSearch } from './hooks/useNodeSearch';
 export { useWorkflowStore, getWorkflowState, setWorkflowState } from './stores/workflowStore';
 
 export { layoutNodes } from './utils/layout';
+export { assignOptimalHandles, getOptimalHandlesForEdge } from './utils/edgeHandles';
 export {
   detectCycle,
   checkDecisionNodeExits,
