@@ -70,6 +70,9 @@ export interface WorkflowNextProps extends Omit<
   onImport?: () => void;
   showMinimap?: boolean;
   onToggleMinimap?: () => void;
+
+  /** 撤销历史步数上限，默认 50 */
+  undoableActions?: number;
 }
 
 export type WorkflowMode = 'edit' | 'view';

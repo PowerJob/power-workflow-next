@@ -1,13 +1,11 @@
-import { memo, useCallback, useEffect, useMemo } from 'react';
+import { memo, useCallback } from 'react';
 import {
   BaseEdge,
   EdgeLabelRenderer,
   getBezierPath,
   EdgeProps,
   useReactFlow,
-  useStore,
   Position,
-  MarkerType,
 } from '@xyflow/react';
 import { WorkflowEdge, WorkflowEdgeData, NodeType } from '../../types/workflow';
 import { clsx } from 'clsx';
@@ -37,6 +35,10 @@ const cycleProperty = (current: PropertyType): PropertyType => {
   return '';
 };
 
+type CustomEdgeProps = EdgeProps<WorkflowEdge> & {
+  onToggleProperty?: (edgeId: string) => void;
+};
+
 const CustomEdge = ({
   id,
   source,
@@ -50,15 +52,9 @@ const CustomEdge = ({
   markerEnd,
   data,
   selected,
-}: EdgeProps<WorkflowEdge>) => {
+  onToggleProperty,
+}: CustomEdgeProps) => {
   const { setEdges, getNode } = useReactFlow();
-  const defaultMarkerEnd = useStore((s) => s.defaultEdgeOptions?.markerEnd);
-  const currentMarkerColor = useStore((s) => {
-    const e = s.edges.find((edge) => edge.id === id);
-    if (!e?.markerEnd || typeof e.markerEnd !== 'object' || !('color' in e.markerEnd))
-      return undefined;
-    return (e.markerEnd as { color: string }).color;
-  });
   const sourceNode = getNode(source);
   const isFromDecisionNode = sourceNode?.data?.type === NodeType.DECISION;
 
@@ -83,22 +79,6 @@ const CustomEdge = ({
     stroke: strokeColor,
   };
 
-  const markerEndWithColor = useMemo(
-    () =>
-      defaultMarkerEnd && typeof defaultMarkerEnd === 'object'
-        ? { ...defaultMarkerEnd, color: strokeColor }
-        : { type: MarkerType.ArrowClosed, width: 11, height: 11, color: strokeColor },
-    [defaultMarkerEnd, strokeColor],
-  );
-
-  useEffect(() => {
-    if (currentMarkerColor !== strokeColor) {
-      setEdges((edges) =>
-        edges.map((e) => (e.id === id ? { ...e, markerEnd: markerEndWithColor } : e)),
-      );
-    }
-  }, [id, strokeColor, currentMarkerColor, markerEndWithColor, setEdges]);
-
   const sourcePoint = offsetFromAnchor(sourceX, sourceY, sourcePosition, ANCHOR_GAP);
   const targetPoint = offsetFromAnchor(targetX, targetY, targetPosition, ANCHOR_GAP);
 
@@ -111,15 +91,12 @@ const CustomEdge = ({
     targetPosition,
   });
 
-  const coloredMarkerEnd =
-    markerEnd && typeof markerEnd !== 'string'
-      ? {
-          ...markerEnd,
-          color: strokeColor,
-        }
-      : markerEnd;
-
   const handlePropertyToggle = useCallback(() => {
+    if (onToggleProperty) {
+      onToggleProperty(id);
+      return;
+    }
+
     setEdges((edges) =>
       edges.map((edge) => {
         if (edge.id === id) {
@@ -136,11 +113,11 @@ const CustomEdge = ({
         return edge;
       }),
     );
-  }, [id, setEdges]);
+  }, [id, onToggleProperty, setEdges]);
 
   return (
     <>
-      <BaseEdge path={edgePath} markerEnd={coloredMarkerEnd} style={edgeStyle} />
+      <BaseEdge path={edgePath} markerEnd={markerEnd} style={edgeStyle} />
 
       {isFromDecisionNode && (
         <EdgeLabelRenderer>

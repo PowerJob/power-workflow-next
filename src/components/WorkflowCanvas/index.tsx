@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ReactFlow,
   Background,
@@ -7,22 +7,47 @@ import {
   useReactFlow,
   useViewport,
   MarkerType,
+  type NodeChange,
+  type EdgeChange,
 } from '@xyflow/react';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import '@xyflow/react/dist/style.css';
 
 import { JobNode, DecisionNode, NestedWorkflowNode } from '../nodes';
-import { edgeTypes } from '../edges';
+import { CustomEdge } from '../edges';
 import { Toolbar } from '../toolbar';
 import { WorkflowMinimap } from '../common/WorkflowMinimap';
-import { WorkflowNextProps, NodeType } from '../../types/workflow';
+import { WorkflowNextProps, NodeType, type WorkflowNode, type WorkflowEdge, type WorkflowEdgeData } from '../../types/workflow';
 import { useLocale } from '../../hooks/useLocale';
 import { LocaleProvider } from '../../contexts/LocaleContext';
 import type { Connection } from '@xyflow/react';
 import { getSnapHandlesForEdge } from '../../utils/edgeHandles';
+import { createShortcuts, useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
+
+interface WorkflowSnapshot {
+  nodes: WorkflowNode[];
+  edges: WorkflowEdge[];
+}
+
+interface WorkflowHistoryState {
+  past: WorkflowSnapshot[];
+  present: WorkflowSnapshot;
+  future: WorkflowSnapshot[];
+  initialized: boolean;
+}
+
+const cloneSnapshot = (snapshot: WorkflowSnapshot): WorkflowSnapshot =>
+  JSON.parse(JSON.stringify(snapshot));
+
+const isSnapshotEqual = (a: WorkflowSnapshot, b: WorkflowSnapshot): boolean =>
+  JSON.stringify(a) === JSON.stringify(b);
 
 interface CanvasToolbarProps {
   mode: 'edit' | 'view';
+  canUndo?: boolean;
+  canRedo?: boolean;
+  onUndo?: () => void;
+  onRedo?: () => void;
   onAutoLayout?: (direction: 'horizontal' | 'vertical') => void;
   onAddNode?: (type: import('../../types/workflow').NodeType, position?: { x: number; y: number }) => void;
   onExport?: () => void;
@@ -33,6 +58,10 @@ interface CanvasToolbarProps {
 
 const CanvasToolbar = ({
   mode,
+  canUndo = false,
+  canRedo = false,
+  onUndo,
+  onRedo,
   onAutoLayout,
   onAddNode,
   onExport,
@@ -63,6 +92,10 @@ const CanvasToolbar = ({
   return (
     <Toolbar
       mode={mode}
+      canUndo={canUndo}
+      canRedo={canRedo}
+      onUndo={onUndo}
+      onRedo={onRedo}
       zoom={zoom}
       onFitView={handleFitView}
       onZoomIn={handleZoomIn}
@@ -85,7 +118,6 @@ const WorkflowCanvasInner = ({
   onEdgesChange,
   onConnect,
   mode = 'edit',
-  defaultLocale = 'zh-CN',
   showToolbar = false,
   onAutoLayout,
   onAddNode,
@@ -93,6 +125,7 @@ const WorkflowCanvasInner = ({
   onImport,
   showMinimap = true,
   onToggleMinimap,
+  undoableActions = 50,
   connectSnapDirection = 'horizontal',
   fitView: fitViewProp,
   isValidConnection: userIsValidConnection,
@@ -101,6 +134,203 @@ const WorkflowCanvasInner = ({
   const { t } = useLocale();
   const { screenToFlowPosition } = useReactFlow();
   const isView = mode === 'view';
+  const safeNodes = nodes ?? [];
+  const safeEdges = edges ?? [];
+  const historyLimit = Math.max(1, undoableActions ?? 50);
+  const applyingHistoryRef = useRef(false);
+  const [history, setHistory] = useState<WorkflowHistoryState>({
+    past: [],
+    present: { nodes: [], edges: [] },
+    future: [],
+    initialized: false,
+  });
+
+  useEffect(() => {
+    const currentSnapshot: WorkflowSnapshot = {
+      nodes: cloneSnapshot({ nodes: safeNodes, edges: [] }).nodes,
+      edges: cloneSnapshot({ nodes: [], edges: safeEdges }).edges,
+    };
+
+    setHistory((prev) => {
+      if (!prev.initialized) {
+        return {
+          ...prev,
+          initialized: true,
+          present: currentSnapshot,
+        };
+      }
+
+      if (applyingHistoryRef.current) {
+        applyingHistoryRef.current = false;
+        return {
+          ...prev,
+          present: currentSnapshot,
+        };
+      }
+
+      if (isSnapshotEqual(prev.present, currentSnapshot)) {
+        return prev;
+      }
+
+      return {
+        initialized: true,
+        past: [...prev.past, cloneSnapshot(prev.present)].slice(-historyLimit),
+        present: currentSnapshot,
+        future: [],
+      };
+    });
+  }, [safeNodes, safeEdges, historyLimit]);
+
+  const canUseHistory = mode === 'edit' && !!onNodesChange && !!onEdgesChange;
+  const canUndo = canUseHistory && history.past.length > 0;
+  const canRedo = canUseHistory && history.future.length > 0;
+
+  const applySnapshot = useCallback(
+    (snapshot: WorkflowSnapshot) => {
+      if (!onNodesChange || !onEdgesChange) return;
+
+      const nodeChanges: NodeChange<WorkflowNode>[] = [
+        ...safeNodes.map((node) => ({ id: node.id, type: 'remove' }) as NodeChange<WorkflowNode>),
+        ...snapshot.nodes.map(
+          (node, index) =>
+            ({
+              type: 'add',
+              item: JSON.parse(JSON.stringify(node)),
+              index,
+            }) as NodeChange<WorkflowNode>,
+        ),
+      ];
+
+      const edgeChanges: EdgeChange<WorkflowEdge>[] = [
+        ...safeEdges.map((edge) => ({ id: edge.id, type: 'remove' }) as EdgeChange<WorkflowEdge>),
+        ...snapshot.edges.map(
+          (edge, index) =>
+            ({
+              type: 'add',
+              item: JSON.parse(JSON.stringify(edge)),
+              index,
+            }) as EdgeChange<WorkflowEdge>,
+        ),
+      ];
+
+      onNodesChange(nodeChanges);
+      onEdgesChange(edgeChanges);
+    },
+    [onNodesChange, onEdgesChange, safeNodes, safeEdges],
+  );
+
+  const handleUndo = useCallback(() => {
+    if (!canUseHistory) return;
+
+    let previousSnapshot: WorkflowSnapshot | null = null;
+    setHistory((prev) => {
+      if (prev.past.length === 0) return prev;
+      previousSnapshot = cloneSnapshot(prev.past[prev.past.length - 1]);
+      return {
+        ...prev,
+        past: prev.past.slice(0, -1),
+        present: previousSnapshot,
+        future: [cloneSnapshot(prev.present), ...prev.future],
+      };
+    });
+
+    if (!previousSnapshot) return;
+    applyingHistoryRef.current = true;
+    applySnapshot(previousSnapshot);
+  }, [canUseHistory, applySnapshot]);
+
+  const handleRedo = useCallback(() => {
+    if (!canUseHistory) return;
+
+    let nextSnapshot: WorkflowSnapshot | null = null;
+    setHistory((prev) => {
+      if (prev.future.length === 0) return prev;
+      nextSnapshot = cloneSnapshot(prev.future[0]);
+      return {
+        ...prev,
+        past: [...prev.past, cloneSnapshot(prev.present)].slice(-historyLimit),
+        present: nextSnapshot,
+        future: prev.future.slice(1),
+      };
+    });
+
+    if (!nextSnapshot) return;
+    applyingHistoryRef.current = true;
+    applySnapshot(nextSnapshot);
+  }, [canUseHistory, historyLimit, applySnapshot]);
+
+  const handleDeleteSelection = useCallback(() => {
+    if (!canUseHistory || !onNodesChange || !onEdgesChange) return;
+
+    const selectedNodeIds = new Set(safeNodes.filter((node) => node.selected).map((node) => node.id));
+    const selectedEdgeIds = new Set(
+      safeEdges
+        .filter((edge) => edge.selected || selectedNodeIds.has(edge.source) || selectedNodeIds.has(edge.target))
+        .map((edge) => edge.id),
+    );
+
+    if (selectedNodeIds.size === 0 && selectedEdgeIds.size === 0) return;
+
+    const nodeRemoveChanges = [...selectedNodeIds].map(
+      (id) => ({ id, type: 'remove' }) as NodeChange<WorkflowNode>,
+    );
+    const edgeRemoveChanges = [...selectedEdgeIds].map(
+      (id) => ({ id, type: 'remove' }) as EdgeChange<WorkflowEdge>,
+    );
+
+    onNodesChange(nodeRemoveChanges);
+    onEdgesChange(edgeRemoveChanges);
+  }, [canUseHistory, onNodesChange, onEdgesChange, safeNodes, safeEdges]);
+
+  const handleToggleEdgeProperty = useCallback(
+    (edgeId: string) => {
+      if (!onEdgesChange) return;
+
+      const index = safeEdges.findIndex((edge) => edge.id === edgeId);
+      if (index < 0) return;
+
+      const edge = safeEdges[index];
+      const currentProperty = ((edge.data as WorkflowEdgeData | undefined)?.property ?? '') as '' | 'true' | 'false';
+      const nextProperty = currentProperty === '' ? 'true' : currentProperty === 'true' ? 'false' : '';
+      const updatedEdge: WorkflowEdge = {
+        ...edge,
+        data: {
+          ...(edge.data as WorkflowEdgeData | undefined),
+          property: nextProperty,
+        },
+      };
+
+      const changes: EdgeChange<WorkflowEdge>[] = [
+        { id: edgeId, type: 'remove' } as EdgeChange<WorkflowEdge>,
+        {
+          type: 'add',
+          item: updatedEdge,
+          index,
+        } as EdgeChange<WorkflowEdge>,
+      ];
+
+      onEdgesChange(changes);
+    },
+    [safeEdges, onEdgesChange],
+  );
+
+  const shortcuts = useMemo(
+    () =>
+      createShortcuts(
+        {
+          onUndo: handleUndo,
+          onRedo: handleRedo,
+          onDelete: handleDeleteSelection,
+        },
+        !canUseHistory,
+      ),
+    [handleUndo, handleRedo, handleDeleteSelection, canUseHistory],
+  );
+
+  useKeyboardShortcuts({
+    enabled: mode === 'edit',
+    shortcuts,
+  });
 
   const nodeTypesWithMode = useMemo(
     () => ({
@@ -117,19 +347,40 @@ const WorkflowCanvasInner = ({
     [mode],
   );
 
+  const edgeTypesWithActions = useMemo(
+    () => ({
+      default: (
+        edgeProps: import('@xyflow/react').EdgeProps<import('../../types/workflow').WorkflowEdge>,
+      ) => <CustomEdge {...edgeProps} onToggleProperty={handleToggleEdgeProperty} />,
+      custom: (
+        edgeProps: import('@xyflow/react').EdgeProps<import('../../types/workflow').WorkflowEdge>,
+      ) => <CustomEdge {...edgeProps} onToggleProperty={handleToggleEdgeProperty} />,
+      workflow: (
+        edgeProps: import('@xyflow/react').EdgeProps<import('../../types/workflow').WorkflowEdge>,
+      ) => <CustomEdge {...edgeProps} onToggleProperty={handleToggleEdgeProperty} />,
+    }),
+    [handleToggleEdgeProperty],
+  );
+
   const pendingConnectionRef = useRef<{ source: string; sourceHandle?: string } | null>(null);
   const nativeConnectCommittedRef = useRef(false);
 
   const isValidConnection = useCallback(
-    (connection: Connection) => {
-      const sourceNode = nodes?.find((n) => n.id === connection.source);
+    (candidate: Connection | WorkflowEdge) => {
+      const connection: Connection = {
+        source: candidate.source,
+        sourceHandle: candidate.sourceHandle ?? null,
+        target: candidate.target,
+        targetHandle: candidate.targetHandle ?? null,
+      };
+      const sourceNode = safeNodes.find((n) => n.id === connection.source);
       if (sourceNode?.data?.type === NodeType.DECISION) {
-        const outgoingCount = edges?.filter((e) => e.source === connection.source).length ?? 0;
+        const outgoingCount = safeEdges.filter((e) => e.source === connection.source).length;
         if (outgoingCount >= 2) return false;
       }
-      return userIsValidConnection ? userIsValidConnection(connection) : true;
+      return userIsValidConnection ? userIsValidConnection(connection as any) : true;
     },
-    [nodes, edges, userIsValidConnection],
+    [safeNodes, safeEdges, userIsValidConnection],
   );
 
   const handleConnect = useCallback(
@@ -163,7 +414,7 @@ const WorkflowCanvasInner = ({
       const pending = pendingConnectionRef.current;
       pendingConnectionRef.current = null;
 
-      if (!pending || nativeConnectCommittedRef.current || !nodes?.length || !onConnect) {
+      if (!pending || nativeConnectCommittedRef.current || safeNodes.length === 0 || !onConnect) {
         return;
       }
 
@@ -180,10 +431,10 @@ const WorkflowCanvasInner = ({
       if (!point) return;
 
       const flowPoint = screenToFlowPosition(point);
-      const sourceNode = nodes.find((node) => node.id === pending.source);
+      const sourceNode = safeNodes.find((node) => node.id === pending.source);
       if (!sourceNode) return;
 
-      const targetNode = nodes.find((node) => {
+      const targetNode = safeNodes.find((node) => {
         if (node.id === pending.source) return false;
         const width = node.width ?? (node.data?.type === NodeType.DECISION ? 80 : 200);
         const height = node.height ?? 56;
@@ -211,19 +462,19 @@ const WorkflowCanvasInner = ({
       if (!isValidConnection(connection)) return;
 
       const duplicated =
-        edges?.some(
+        safeEdges.some(
           (edge) =>
             edge.source === connection.source &&
             edge.target === connection.target &&
             (edge.sourceHandle ?? undefined) === (connection.sourceHandle ?? undefined) &&
             (edge.targetHandle ?? undefined) === (connection.targetHandle ?? undefined),
-        ) ?? false;
+        );
 
       if (duplicated) return;
 
       onConnect(connection);
     },
-    [nodes, edges, onConnect, screenToFlowPosition, connectSnapDirection, isValidConnection],
+    [safeNodes, safeEdges, onConnect, screenToFlowPosition, connectSnapDirection, isValidConnection],
   );
 
   return (
@@ -233,6 +484,10 @@ const WorkflowCanvasInner = ({
           <div className="flex-shrink-0 z-10 bg-white border-b border-gray-200">
             <CanvasToolbar
               mode={mode}
+              canUndo={canUndo}
+              canRedo={canRedo}
+              onUndo={handleUndo}
+              onRedo={handleRedo}
               onAutoLayout={onAutoLayout}
               onAddNode={onAddNode}
               onExport={onExport}
@@ -252,7 +507,7 @@ const WorkflowCanvasInner = ({
             onConnectStart={handleConnectStart}
             onConnectEnd={handleConnectEnd}
             nodeTypes={nodeTypesWithMode}
-            edgeTypes={edgeTypes}
+            edgeTypes={edgeTypesWithActions}
             defaultEdgeOptions={{
               markerEnd: {
                 type: MarkerType.ArrowClosed,
