@@ -138,6 +138,42 @@ const WorkflowCanvasInner = ({
   const isView = mode === 'view';
   const safeNodes = nodes ?? [];
   const safeEdges = edges ?? [];
+  const edgesWithMarkerColor = useMemo(() => {
+    const getEdgeStrokeColor = (edge: WorkflowEdge) => {
+      const sourceNode = safeNodes.find((node) => node.id === edge.source);
+      const isFromDecisionNode = sourceNode?.data?.type === NodeType.DECISION;
+      const property = ((edge.data as WorkflowEdgeData | undefined)?.property ?? '') as '' | 'true' | 'false';
+      const isTrue = property === 'true';
+      const isFalse = property === 'false';
+      const isSelected = !!edge.selected;
+
+      if (!isFromDecisionNode) return isSelected ? '#3B82F6' : '#94A3B8';
+      if (isSelected) return '#3B82F6';
+      if (isTrue) return '#52C41A';
+      if (isFalse) return '#EF4444';
+      return '#94A3B8';
+    };
+
+    return safeEdges.map((edge) => {
+      const strokeColor = getEdgeStrokeColor(edge);
+      const markerConfig =
+        typeof edge.markerEnd === 'object' && edge.markerEnd !== null
+          ? edge.markerEnd
+          : {
+              type: MarkerType.ArrowClosed,
+              width: 11,
+              height: 11,
+            };
+
+      return {
+        ...edge,
+        markerEnd: {
+          ...markerConfig,
+          color: strokeColor,
+        },
+      };
+    });
+  }, [safeEdges, safeNodes]);
   const historyLimit = Math.max(1, undoableActions ?? 50);
   const applyingHistoryRef = useRef(false);
   const [history, setHistory] = useState<WorkflowHistoryState>({
@@ -353,15 +389,33 @@ const WorkflowCanvasInner = ({
     () => ({
       default: (
         edgeProps: import('@xyflow/react').EdgeProps<import('../../types/workflow').WorkflowEdge>,
-      ) => <CustomEdge {...edgeProps} onToggleProperty={handleToggleEdgeProperty} />,
+      ) => (
+        <CustomEdge
+          {...edgeProps}
+          mode={mode}
+          onToggleProperty={mode === 'edit' ? handleToggleEdgeProperty : undefined}
+        />
+      ),
       custom: (
         edgeProps: import('@xyflow/react').EdgeProps<import('../../types/workflow').WorkflowEdge>,
-      ) => <CustomEdge {...edgeProps} onToggleProperty={handleToggleEdgeProperty} />,
+      ) => (
+        <CustomEdge
+          {...edgeProps}
+          mode={mode}
+          onToggleProperty={mode === 'edit' ? handleToggleEdgeProperty : undefined}
+        />
+      ),
       workflow: (
         edgeProps: import('@xyflow/react').EdgeProps<import('../../types/workflow').WorkflowEdge>,
-      ) => <CustomEdge {...edgeProps} onToggleProperty={handleToggleEdgeProperty} />,
+      ) => (
+        <CustomEdge
+          {...edgeProps}
+          mode={mode}
+          onToggleProperty={mode === 'edit' ? handleToggleEdgeProperty : undefined}
+        />
+      ),
     }),
-    [handleToggleEdgeProperty],
+    [mode, handleToggleEdgeProperty],
   );
 
   const pendingConnectionRef = useRef<{ source: string; sourceHandle?: string } | null>(null);
@@ -502,7 +556,7 @@ const WorkflowCanvasInner = ({
         <div className="flex-1 min-h-0 relative bg-gray-50">
           <ReactFlow
             nodes={nodes}
-            edges={edges}
+            edges={edgesWithMarkerColor}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={handleConnect}
@@ -523,6 +577,7 @@ const WorkflowCanvasInner = ({
             maxZoom={2}
             nodesDraggable={!isView}
             nodesConnectable={!isView}
+            edgesReconnectable={!isView}
             elementsSelectable={true}
             proOptions={{ hideAttribution: true }}
             {...props}

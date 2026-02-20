@@ -36,6 +36,7 @@ const cycleProperty = (current: PropertyType): PropertyType => {
 };
 
 type CustomEdgeProps = EdgeProps<WorkflowEdge> & {
+  mode?: 'edit' | 'view';
   onToggleProperty?: (edgeId: string) => void;
 };
 
@@ -52,6 +53,7 @@ const CustomEdge = ({
   markerEnd,
   data,
   selected,
+  mode = 'edit',
   onToggleProperty,
 }: CustomEdgeProps) => {
   const { setEdges, getNode } = useReactFlow();
@@ -115,33 +117,47 @@ const CustomEdge = ({
     );
   }, [id, onToggleProperty, setEdges]);
 
+  const canEditEdge = mode === 'edit';
+  const showPropertyLabel = isFromDecisionNode && (canEditEdge || hasProperty);
+
   return (
     <>
       <BaseEdge path={edgePath} markerEnd={markerEnd} style={edgeStyle} />
 
-      {isFromDecisionNode && (
+      {showPropertyLabel && (
         <EdgeLabelRenderer>
           <div
             style={{
               position: 'absolute',
               transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
               fontSize: 12,
-              pointerEvents: 'all',
+              pointerEvents: canEditEdge ? 'all' : 'none',
             }}
             className="nodrag nopan"
           >
             {hasProperty ? (
-              <button
-                onClick={handlePropertyToggle}
-                className={clsx(
-                  'px-1.5 py-0.5 rounded text-white font-bold text-xs shadow-sm cursor-pointer transition-all',
-                  'hover:scale-110',
-                  isTrue ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600',
-                )}
-              >
-                {isTrue ? 'Y' : 'N'}
-              </button>
-            ) : (
+              canEditEdge ? (
+                <button
+                  onClick={handlePropertyToggle}
+                  className={clsx(
+                    'px-1.5 py-0.5 rounded text-white font-bold text-xs shadow-sm cursor-pointer transition-all',
+                    'hover:scale-110',
+                    isTrue ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600',
+                  )}
+                >
+                  {isTrue ? 'Y' : 'N'}
+                </button>
+              ) : (
+                <span
+                  className={clsx(
+                    'px-1.5 py-0.5 rounded text-white font-bold text-xs shadow-sm',
+                    isTrue ? 'bg-green-500' : 'bg-red-500',
+                  )}
+                >
+                  {isTrue ? 'Y' : 'N'}
+                </span>
+              )
+            ) : canEditEdge ? (
               <button
                 onClick={handlePropertyToggle}
                 className={clsx(
@@ -153,7 +169,7 @@ const CustomEdge = ({
               >
                 +
               </button>
-            )}
+            ) : null}
           </div>
         </EdgeLabelRenderer>
       )}
