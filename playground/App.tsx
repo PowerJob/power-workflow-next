@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useMemo, type MouseEvent as ReactMouseEvent } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo, type MouseEvent as ReactMouseEvent } from 'react';
 import { addEdge, Connection, useNodesState, useEdgesState } from '@xyflow/react';
 import {
   WorkflowCanvas,
@@ -109,7 +109,11 @@ const PlaygroundInner = () => {
     [],
   );
 
-  useLocale();
+  const { setLocale: setContextLocale } = useLocale();
+
+  useEffect(() => {
+    setContextLocale(locale);
+  }, [locale, setContextLocale]);
 
   const editingNode = selectedNodeId ? nodes.find((n) => n.id === selectedNodeId) ?? null : null;
 

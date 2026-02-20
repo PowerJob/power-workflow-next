@@ -60,6 +60,8 @@ export const enUS: Record<LocaleKey, string> = {
   'workflow.toolbar.undo': 'Undo',
   'workflow.toolbar.redo': 'Redo',
   'workflow.toolbar.addNode': 'Add Node',
+  'workflow.toolbar.export': 'Export JSON',
+  'workflow.toolbar.import': 'Import JSON',
   'workflow.canvas.empty': 'Right click to add node',
   'workflow.panel.confirmSave': 'There are warnings when saving. Do you want to continue?',
   'workflow.panel.continue': 'Continue',

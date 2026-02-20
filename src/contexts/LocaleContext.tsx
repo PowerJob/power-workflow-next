@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { zhCN, type LocaleKey } from '../locales/zh-CN';
 import { enUS } from '../locales/en-US';
 
@@ -17,11 +17,16 @@ interface LocaleProviderProps {
   defaultLocale?: LocaleType;
 }
 
-export const LocaleProvider: React.FC<LocaleProviderProps> = ({ 
-  children, 
-  defaultLocale = 'zh-CN' 
+export const LocaleProvider: React.FC<LocaleProviderProps> = ({
+  children,
+  defaultLocale = 'zh-CN',
 }) => {
   const [locale, setLocale] = useState<LocaleType>(defaultLocale);
+
+  // 当外部传入的 defaultLocale 变化时同步内部 state，使受控/外部切换语言生效
+  useEffect(() => {
+    setLocale(defaultLocale);
+  }, [defaultLocale]);
 
   const t = (key: LocaleKey | string): string => {
     const messages = locale === 'zh-CN' ? zhCN : enUS;

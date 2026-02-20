@@ -111,23 +111,23 @@ export const Toolbar = ({
           <ToolbarDropdown icon={<Plus size={16} />} title={t('workflow.toolbar.addNode')}>
             <DropdownItem
               icon={<ClipboardList size={14} />}
-              label="任务节点"
+              label={t('workflow.node.job')}
               onClick={handleAddJobNode}
             />
             <DropdownItem
               icon={<Split size={14} />}
-              label="判断节点"
+              label={t('workflow.node.decision')}
               onClick={handleAddDecisionNode}
             />
             <DropdownItem
               icon={<Layers size={14} />}
-              label="嵌套工作流"
+              label={t('workflow.node.nested')}
               onClick={handleAddNestedNode}
             />
           </ToolbarDropdown>
 
-          <ToolbarButton icon={<Download size={16} />} onClick={onExport} title="导出 JSON" />
-          <ToolbarButton icon={<Upload size={16} />} onClick={onImport} title="导入 JSON" />
+          <ToolbarButton icon={<Download size={16} />} onClick={onExport} title={t('workflow.toolbar.export')} />
+          <ToolbarButton icon={<Upload size={16} />} onClick={onImport} title={t('workflow.toolbar.import')} />
         </>
       )}
 
@@ -137,12 +137,12 @@ export const Toolbar = ({
       >
         <DropdownItem
           icon={<ArrowRight size={14} />}
-          label="横向布局"
+          label={t('workflow.layout.horizontal')}
           onClick={handleHorizontalLayout}
         />
         <DropdownItem
           icon={<ArrowDown size={14} />}
-          label="纵向布局"
+          label={t('workflow.layout.vertical')}
           onClick={handleVerticalLayout}
         />
       </ToolbarDropdown>
@@ -174,7 +174,7 @@ export const Toolbar = ({
         <>
           <input
             type="text"
-            placeholder="搜索节点..."
+            placeholder={t('workflow.search.placeholder')}
             value={searchQuery}
             onChange={(e) => onSearch(e.target.value)}
             className="h-7 px-3 text-sm border border-gray-200 rounded-md w-32 focus:outline-none focus:border-blue-500"
@@ -188,7 +188,7 @@ export const Toolbar = ({
             icon={<Map size={16} />}
             onClick={onToggleMinimap}
             active={showMinimap}
-            title="小地图"
+            title={t('workflow.minimap.toggle')}
           />
         </>
       )}

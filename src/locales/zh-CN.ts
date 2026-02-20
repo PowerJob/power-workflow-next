@@ -52,6 +52,8 @@ export const zhCN = {
   'workflow.toolbar.undo': '撤销',
   'workflow.toolbar.redo': '重做',
   'workflow.toolbar.addNode': '添加节点',
+  'workflow.toolbar.export': '导出 JSON',
+  'workflow.toolbar.import': '导入 JSON',
   'workflow.canvas.empty': '右键点击添加节点',
   'workflow.panel.confirmSave': '保存时存在警告，是否继续保存？',
   'workflow.panel.continue': '继续保存',
