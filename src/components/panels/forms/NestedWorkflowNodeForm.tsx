@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { FormGroup, TextInput, SelectInput, EnableSkipOptions, CodeEditor } from '.';
 import { WorkflowNodeData, WorkflowReferenceOption } from '../../../types/workflow';
 import { useLocale } from '../../../hooks/useLocale';
-import { ValidationRule, nodeName, json } from '../../../utils/validation';
+import { ValidationRule, nodeName } from '../../../utils/validation';
 
 interface NestedWorkflowNodeFormProps {
   data: WorkflowNodeData;
@@ -21,7 +21,6 @@ interface FormData {
 
 const validationRules: Record<string, ValidationRule[]> = {
   label: [{ validator: nodeName }],
-  params: [{ validator: json }],
 };
 
 export const NestedWorkflowNodeForm = ({
@@ -215,6 +214,7 @@ export const NestedWorkflowNodeForm = ({
           onBlur={() => handleBlur('params')}
           placeholder='{"key": "value"}'
           height={150}
+          showLineNumbers={false}
           error={!!errors.params && touched.params}
         />
       </FormGroup>

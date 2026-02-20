@@ -6,7 +6,6 @@ import {
   ValidationRule,
   nodeName,
   range,
-  json,
   Severity,
 } from '../../../utils/validation';
 
@@ -35,7 +34,6 @@ const validationRules: Record<string, ValidationRule[]> = {
       severity: 'warning' as Severity,
     },
   ],
-  params: [{ validator: json }],
 };
 
 export const JobNodeForm = ({ data, onChange, onValidationChange, jobOptions = [] }: JobNodeFormProps) => {
@@ -254,6 +252,7 @@ export const JobNodeForm = ({ data, onChange, onValidationChange, jobOptions = [
           onBlur={() => handleBlur('params')}
           placeholder='{"key": "value"}'
           height={150}
+          showLineNumbers={false}
           error={!!errors.params && touched.params}
         />
       </FormGroup>

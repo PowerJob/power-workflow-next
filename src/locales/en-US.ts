@@ -35,7 +35,10 @@ export const enUS: Record<LocaleKey, string> = {
   'workflow.panel.legacyValue': 'Legacy Value',
   'workflow.panel.legacyValueHint':
     'Current value is not in options. Please reselect before saving.',
-  'workflow.panel.conditionHint': 'Use ${variable} format to reference upstream results',
+  'workflow.panel.conditionPlaceholder':
+    "Use context['key'] to read from context. Must return a boolean.",
+  'workflow.panel.conditionHint':
+    "Groovy script: use context['key'] to read from context. Must return a boolean.",
   'workflow.validation.required': 'Required',
   'workflow.validation.minLength': 'Length is too short',
   'workflow.validation.maxLength': 'Length exceeds limit',
