@@ -32,18 +32,12 @@ interface ExecutionDetailsProps {
   startTime?: string;
   endTime?: string;
   error?: string;
+  instanceId?: string;
 }
 
 export const formatDuration = (ms: number): string => {
-  if (!ms || ms < 0) return '-';
-  const seconds = Math.floor(ms / 1000);
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
-
-  if (minutes > 0) {
-    return `${minutes}分${remainingSeconds}秒`;
-  }
-  return `${seconds}秒`;
+  if (ms == null || ms < 0) return '-';
+  return `${ms} ms`;
 };
 
 export const formatDateTime = (dateString: string): string => {
@@ -68,9 +62,16 @@ export const ExecutionDetails = ({
   startTime,
   endTime,
   error,
+  instanceId,
 }: ExecutionDetailsProps) => {
   return (
     <div className="flex flex-col gap-2 min-w-0">
+      {instanceId && (
+        <div className="grid grid-cols-[36px_1fr] gap-x-2 gap-y-1.5 text-xs">
+          <span className="text-gray-400 flex-shrink-0">实例 ID</span>
+          <span className="font-mono text-gray-900 text-right min-w-0 break-all">{instanceId}</span>
+        </div>
+      )}
       <div className="grid grid-cols-[36px_1fr] gap-x-2 gap-y-1.5 text-xs">
         <span className="text-gray-400 flex-shrink-0">时长</span>
         <span className="font-medium font-mono text-gray-900 text-right min-w-0 break-words">

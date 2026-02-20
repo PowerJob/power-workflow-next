@@ -7,6 +7,7 @@ export const zhCN = {
   'workflow.status.failed': '失败',
   'workflow.status.success': '成功',
   'workflow.status.stopped': '已停止',
+  'workflow.status.canceled': '已取消',
   'workflow.panel.title': '节点属性',
   'workflow.panel.save': '保存',
   'workflow.panel.cancel': '取消',

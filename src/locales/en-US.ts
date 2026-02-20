@@ -9,6 +9,7 @@ export const enUS: Record<LocaleKey, string> = {
   'workflow.status.failed': 'Failed',
   'workflow.status.success': 'Success',
   'workflow.status.stopped': 'Stopped',
+  'workflow.status.canceled': 'Canceled',
   'workflow.panel.title': 'Node Properties',
   'workflow.panel.save': 'Save',
   'workflow.panel.cancel': 'Cancel',

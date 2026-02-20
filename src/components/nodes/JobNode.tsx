@@ -77,7 +77,6 @@ const JobNode = ({ data, selected, mode = 'edit' }: JobNodeProps) => {
           </NodeTooltip>
           <div className="text-xs text-gray-400 truncate">
             {data.jobId && <span>#{data.jobId}</span>}
-            {isView && data.instanceId && <span className="ml-2">实例:{data.instanceId}</span>}
           </div>
         </div>
       </div>
@@ -87,18 +86,23 @@ const JobNode = ({ data, selected, mode = 'edit' }: JobNodeProps) => {
     </div>
   );
 
-  if (isView && hasExecutionInfo) {
+  if (isView && (hasExecutionInfo || data.instanceId)) {
+    const tooltipContent = hasExecutionInfo ? (
+      <ExecutionDetails
+        duration={data.execution?.duration}
+        startTime={data.execution?.startTime}
+        endTime={data.execution?.endTime}
+        error={data.execution?.error}
+        instanceId={data.instanceId}
+      />
+    ) : (
+      <div className="text-xs text-gray-700">
+        <span className="text-gray-400">实例 ID：</span>
+        <span className="font-mono break-all">{data.instanceId}</span>
+      </div>
+    );
     return (
-      <ExecutionTooltip
-        content={
-          <ExecutionDetails
-            duration={data.execution?.duration}
-            startTime={data.execution?.startTime}
-            endTime={data.execution?.endTime}
-            error={data.execution?.error}
-          />
-        }
-      >
+      <ExecutionTooltip content={tooltipContent}>
         {nodeContent}
       </ExecutionTooltip>
     );

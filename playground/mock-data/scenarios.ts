@@ -191,6 +191,10 @@ export const nestedWorkflow = {
 
 /**
  * 场景4: 视图模式 - 运行状态展示
+ * 含 JOB、判断节点、嵌套工作流。
+ * 实例 id：未运行的节点无 instanceId；运行中、已结束的节点有 instanceId（判断节点不生成任务实例，始终无 instanceId）。
+ * 判断节点：执行后 status=SUCCESS、result="true"|"false"，带 startTime/endTime；
+ * 与 result 一致的出边 enable 为 true，不一致的边 enable=false；仅能通过禁用边到达的节点为 CANCELED、enable=false、disableByControlNode=true。
  */
 export const viewModeWithStatus = {
   nodes: [
@@ -214,65 +218,118 @@ export const viewModeWithStatus = {
     {
       id: 'v2',
       type: NodeType.JOB,
-      position: { x: 300, y: 100 },
+      position: { x: 280, y: 100 },
       data: {
         label: '任务B',
         type: NodeType.JOB,
         jobId: 4002,
-        status: NodeStatus.RUNNING,
+        status: NodeStatus.SUCCESS,
         instanceId: 'inst-002',
+        execution: {
+          duration: 800,
+          startTime: '2024-01-15 10:00:01',
+          endTime: '2024-01-15 10:00:02',
+        },
+      },
+    },
+    {
+      id: 'v-decision',
+      type: NodeType.DECISION,
+      position: { x: 460, y: 100 },
+      data: {
+        label: '检查结果',
+        type: NodeType.DECISION,
+        condition: '${result} > 0',
+        status: NodeStatus.SUCCESS,
+        result: 'true',
+        execution: {
+          startTime: '2024-01-15 10:00:02',
+          endTime: '2024-01-15 10:00:02',
+        },
+      },
+    },
+    {
+      id: 'v-nested1',
+      type: NodeType.NESTED_WORKFLOW,
+      position: { x: 640, y: 40 },
+      data: {
+        label: '子流程-数据处理',
+        type: NodeType.NESTED_WORKFLOW,
+        targetWorkflowId: 'wf-001',
+        status: NodeStatus.RUNNING,
+        instanceId: 'inst-nested1',
         execution: {
           startTime: '2024-01-15 10:00:02',
         },
       },
     },
     {
+      id: 'v-nested2',
+      type: NodeType.NESTED_WORKFLOW,
+      position: { x: 820, y: 40 },
+      data: {
+        label: '子流程-报表生成',
+        type: NodeType.NESTED_WORKFLOW,
+        targetWorkflowId: 'wf-002',
+        status: NodeStatus.WAITING,
+      },
+    },
+    {
       id: 'v3',
       type: NodeType.JOB,
-      position: { x: 500, y: 100 },
+      position: { x: 640, y: 160 },
       data: {
         label: '任务C',
         type: NodeType.JOB,
         jobId: 4003,
-        status: NodeStatus.FAILED,
-        instanceId: 'inst-003',
-        execution: {
-          duration: 500,
-          startTime: '2024-01-15 10:00:03',
-          endTime: '2024-01-15 10:00:03',
-          error: 'Connection timeout: unable to connect to database',
-        },
+        enable: false,
+        disableByControlNode: true,
+        status: NodeStatus.CANCELED,
       },
     },
     {
       id: 'v4',
       type: NodeType.JOB,
-      position: { x: 700, y: 100 },
+      position: { x: 1000, y: 100 },
       data: {
         label: '任务D',
         type: NodeType.JOB,
         jobId: 4004,
         status: NodeStatus.WAITING,
-        instanceId: 'inst-004',
       },
     },
     {
       id: 'v5',
       type: NodeType.JOB,
-      position: { x: 900, y: 100 },
+      position: { x: 1180, y: 100 },
       data: {
         label: '任务E',
         type: NodeType.JOB,
         jobId: 4005,
-        status: NodeStatus.STOPPED,
-        instanceId: 'inst-005',
+        status: NodeStatus.WAITING,
       },
     },
   ] as WorkflowNode[],
   edges: [
     { id: 've1', source: 'v1', target: 'v2', type: 'custom' },
-    { id: 've2', source: 'v2', target: 'v3', type: 'custom' },
-    { id: 've3', source: 'v3', target: 'v4', type: 'custom' },
+    { id: 've2', source: 'v2', target: 'v-decision', type: 'custom' },
+    {
+      id: 've-decision-true',
+      source: 'v-decision',
+      target: 'v-nested1',
+      type: 'custom',
+      data: { property: 'true', enable: true },
+    },
+    {
+      id: 've-decision-false',
+      source: 'v-decision',
+      target: 'v3',
+      type: 'custom',
+      data: { property: 'false', enable: false },
+    },
+    { id: 've-nested1', source: 'v-nested1', target: 'v-nested2', type: 'custom' },
+    { id: 've-nested2', source: 'v-nested2', target: 'v4', type: 'custom' },
+    { id: 've3', source: 'v3', target: 'v4', type: 'custom', data: { enable: false } },
     { id: 've4', source: 'v4', target: 'v5', type: 'custom' },
   ] as WorkflowEdge[],
 };

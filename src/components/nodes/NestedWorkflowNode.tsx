@@ -6,6 +6,7 @@ import { WorkflowNode, NodeStatus } from '../../types/workflow';
 import { useLocale } from '../../hooks/useLocale';
 import { clsx } from 'clsx';
 import NodeTooltip from '../common/NodeTooltip';
+import { ExecutionTooltip, ExecutionDetails } from '../common/ExecutionTooltip';
 import { getNodeStatusText, getNodeStatusTone } from './statusVisuals';
 
 const MAX_LABEL_LENGTH = 14;
@@ -19,21 +20,23 @@ interface NestedWorkflowNodeProps extends NodeProps<WorkflowNode> {
   mode?: 'edit' | 'view';
 }
 
-const NestedWorkflowNode = ({ data, selected }: NestedWorkflowNodeProps) => {
+const NestedWorkflowNode = ({ data, selected, mode = 'edit' }: NestedWorkflowNodeProps) => {
   const { t } = useLocale();
   const label = data.label || t('workflow.node.nested');
   const statusStyles = getNodeStatusTone(data.status);
   const statusText = getNodeStatusText(data.status, t);
   const isRunning = data.status === NodeStatus.RUNNING;
+  const isView = mode === 'view';
+  const hasExecutionInfo = data.execution && (data.execution.duration ?? data.execution.startTime);
 
-  return (
+  const nodeContent = (
     <div
       className={clsx(
         'relative flex items-center rounded-md border-2 transition-all',
         statusStyles.bg,
         statusStyles.border,
         selected && 'ring-2 ring-blue-200 shadow-md',
-        !selected && 'hover:border-blue-300',
+        !selected && !isView && 'hover:border-blue-300',
         isRunning && 'node-running',
         'w-[200px] h-[56px] px-3',
       )}
@@ -76,6 +79,30 @@ const NestedWorkflowNode = ({ data, selected }: NestedWorkflowNodeProps) => {
       <WorkflowHandle type="source" position={Position.Bottom} id="bottom" />
     </div>
   );
+
+  if (isView && (hasExecutionInfo || data.instanceId)) {
+    const tooltipContent = hasExecutionInfo ? (
+      <ExecutionDetails
+        duration={data.execution?.duration}
+        startTime={data.execution?.startTime}
+        endTime={data.execution?.endTime}
+        error={data.execution?.error}
+        instanceId={data.instanceId}
+      />
+    ) : (
+      <div className="text-xs text-gray-700">
+        <span className="text-gray-400">实例 ID：</span>
+        <span className="font-mono break-all">{data.instanceId}</span>
+      </div>
+    );
+    return (
+      <ExecutionTooltip content={tooltipContent}>
+        {nodeContent}
+      </ExecutionTooltip>
+    );
+  }
+
+  return nodeContent;
 };
 
 export default memo(NestedWorkflowNode);

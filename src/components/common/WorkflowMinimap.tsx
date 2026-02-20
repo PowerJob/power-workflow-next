@@ -16,6 +16,8 @@ const getNodeColor = (node: WorkflowNode): string => {
       return '#FFA940';
     case NodeStatus.STOPPED:
       return '#8C8C8C';
+    case NodeStatus.CANCELED:
+      return '#BFBFBF';
     default:
       return '#E5E7EB';
   }

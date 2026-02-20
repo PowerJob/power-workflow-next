@@ -11,6 +11,7 @@ export enum NodeStatus {
   RUNNING = 3,
   FAILED = 4,
   SUCCESS = 5,
+  CANCELED = 6,
   STOPPED = 10,
 }
 
@@ -35,6 +36,11 @@ export interface WorkflowNodeData extends Record<string, unknown> {
   params?: string;
   condition?: string;
   targetWorkflowId?: string | number;
+
+  /** 判断节点执行结果，仅 DECISION 节点在运行后存在 */
+  result?: 'true' | 'false';
+  /** 因控制节点（如判断未选中分支）而被禁用，仅视图/运行态 */
+  disableByControlNode?: boolean;
 }
 
 export interface WorkflowReferenceOption {
