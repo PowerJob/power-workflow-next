@@ -34,7 +34,7 @@ const JobNode = ({ data, selected, mode = 'edit' }: JobNodeProps) => {
     <div
       className={clsx(
         'relative flex flex-col rounded-md border-2 transition-all',
-        isView ? 'w-[200px] h-[72px] px-3 py-2' : 'w-[200px] h-[56px] px-3',
+        'w-[200px] h-[56px] px-3',
         statusStyles.bg,
         statusStyles.border,
         selected && 'ring-2 ring-blue-200 shadow-md',
