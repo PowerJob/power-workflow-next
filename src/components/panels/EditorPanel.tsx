@@ -85,6 +85,45 @@ const getNodeIcon = (type: NodeType) => {
   }
 };
 
+const getTypeIconClass = (type: NodeType): string => {
+  switch (type) {
+    case NodeType.JOB:
+      return 'text-blue-600';
+    case NodeType.DECISION:
+      return 'text-amber-600';
+    case NodeType.NESTED_WORKFLOW:
+      return 'text-violet-600';
+    default:
+      return 'text-gray-600';
+  }
+};
+
+const getTypeBorderClass = (type: NodeType): string => {
+  switch (type) {
+    case NodeType.JOB:
+      return 'border-blue-500';
+    case NodeType.DECISION:
+      return 'border-amber-500';
+    case NodeType.NESTED_WORKFLOW:
+      return 'border-violet-500';
+    default:
+      return 'border-gray-400';
+  }
+};
+
+const getTypeLabelKey = (type: NodeType): string => {
+  switch (type) {
+    case NodeType.JOB:
+      return 'workflow.node.job';
+    case NodeType.DECISION:
+      return 'workflow.node.decision';
+    case NodeType.NESTED_WORKFLOW:
+      return 'workflow.node.nested';
+    default:
+      return 'workflow.panel.title';
+  }
+};
+
 export const EditorPanel = forwardRef<EditorPanelRef, EditorPanelProps>(
   ({ node, open, onClose, onSave, onBeforeSave, jobOptions, workflowOptions }, ref) => {
     const { t } = useLocale();
@@ -103,6 +142,15 @@ export const EditorPanel = forwardRef<EditorPanelRef, EditorPanelProps>(
         setShowConfirmDialog(false);
       }
     }, [node]);
+
+    useEffect(() => {
+      if (!open) return;
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') onClose();
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [open, onClose]);
 
     const handleDataChange = useCallback((newData: WorkflowNodeData) => {
       setEditedData(newData);
@@ -190,29 +238,56 @@ export const EditorPanel = forwardRef<EditorPanelRef, EditorPanelProps>(
     const Icon = getNodeIcon(node.data.type);
     const hasErrors = Object.keys(errors).length > 0;
     const hasWarnings = Object.keys(warnings).length > 0;
+    const typeBorderClass = getTypeBorderClass(node.data.type);
+    const typeIconClass = getTypeIconClass(node.data.type);
+    const typeLabel = t(getTypeLabelKey(node.data.type));
+    const nodeLabel = editedData.label?.trim() || t('workflow.panel.title');
 
     return (
-      <div
-        className={clsx(
-          'fixed top-0 right-0 h-full w-[320px] bg-white shadow-lg z-[100]',
-          'flex flex-col transition-transform duration-200 ease-in-out',
-          open ? 'translate-x-0' : 'translate-x-full',
-        )}
-      >
-        <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-b border-gray-200">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 bg-gray-100 rounded">
-              <Icon size={16} className="text-gray-600" />
-            </div>
-            <span className="text-sm font-medium text-gray-700">{t('workflow.panel.title')}</span>
-          </div>
-          <button
-            onClick={handleCancel}
-            className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+      <>
+        {/* 遮罩：点击关闭，聚焦编辑区域 */}
+        <div
+          role="presentation"
+          aria-hidden
+          className={clsx(
+            'fixed inset-0 z-[99] bg-black/20 transition-opacity duration-200 ease-in-out',
+            open ? 'opacity-100' : 'opacity-0 pointer-events-none',
+          )}
+          onClick={onClose}
+        />
+
+        <div
+          className={clsx(
+            'fixed top-0 right-0 h-full w-[320px] bg-white shadow-xl z-[100]',
+            'flex flex-col transition-transform duration-200 ease-in-out',
+            open ? 'translate-x-0' : 'translate-x-full',
+          )}
+        >
+          {/* 头部：类型色条 + 节点名称 + 类型副标题 */}
+          <div
+            className={clsx(
+              'flex items-start justify-between gap-3 pl-4 pr-3 py-3 border-b border-gray-200',
+              'bg-gray-50/90',
+            )}
           >
-            <X size={18} />
-          </button>
-        </div>
+            <div className={clsx('flex min-w-0 flex-1 gap-3 rounded-r border-l-4 pl-3', typeBorderClass)}>
+              <div className="mt-0.5 shrink-0 rounded bg-gray-100 p-1.5">
+                <Icon size={16} className={typeIconClass} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium text-gray-900">{nodeLabel}</p>
+                <p className="text-xs text-gray-500">{typeLabel}</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="shrink-0 rounded p-1.5 text-gray-400 hover:bg-gray-200/80 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-1"
+              aria-label={t('workflow.panel.close')}
+            >
+              <X size={18} />
+            </button>
+          </div>
 
         <div className="flex-1 overflow-y-auto p-4">
           <NodeFormWrapper
@@ -251,27 +326,30 @@ export const EditorPanel = forwardRef<EditorPanelRef, EditorPanelProps>(
           </div>
         )}
 
-        <div className="flex gap-2 p-4 border-t border-gray-200 bg-gray-50">
+        <div className="flex gap-2 border-t border-gray-200 bg-gray-50/90 p-4 shadow-[0_-1px_3px_rgba(0,0,0,0.04)]">
           <button
+            type="button"
             onClick={handleCancel}
-            className="flex-1 px-3 py-2 text-sm text-gray-600 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
+            className="flex-1 px-3 py-2 text-sm text-gray-600 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-1"
           >
             {t('workflow.panel.cancel')}
           </button>
           <button
+            type="button"
             onClick={handleSave}
             disabled={hasErrors || isSaving}
             className={clsx(
-              'flex-1 px-3 py-2 text-sm text-white rounded-md transition-colors',
+              'flex-1 px-3 py-2 text-sm text-white rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1',
               hasErrors || isSaving
-                ? 'bg-gray-300 cursor-not-allowed'
-                : 'bg-blue-500 hover:bg-blue-600',
+                ? 'bg-gray-300 cursor-not-allowed focus:ring-gray-300'
+                : 'bg-blue-500 hover:bg-blue-600 focus:ring-blue-400',
             )}
           >
             {isSaving ? '...' : t('workflow.panel.save')}
           </button>
         </div>
       </div>
+      </>
     );
   },
 );

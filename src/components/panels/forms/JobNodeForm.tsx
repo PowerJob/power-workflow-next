@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { FormGroup, TextInput, NumberInput, SelectInput, Toggle, CodeEditor } from '.';
+import { FormGroup, TextInput, NumberInput, SelectInput, EnableSkipOptions, CodeEditor } from '.';
 import { WorkflowNodeData, WorkflowReferenceOption } from '../../../types/workflow';
 import { useLocale } from '../../../hooks/useLocale';
 import {
@@ -202,6 +202,7 @@ export const JobNodeForm = ({ data, onChange, onValidationChange, jobOptions = [
           onBlur={() => handleBlur('jobId')}
           placeholder={t('workflow.panel.selectPlaceholder')}
           searchable
+          showIdAndName
           searchPlaceholder={t('workflow.panel.searchPlaceholder')}
           noResultsText={t('workflow.panel.searchNoResults')}
           disabled={!hasAvailableJobOptions}
@@ -219,16 +220,12 @@ export const JobNodeForm = ({ data, onChange, onValidationChange, jobOptions = [
           )}
       </FormGroup>
 
-      <FormGroup label={t('workflow.panel.enable')}>
-        <Toggle
-          checked={formData.enable}
-          onChange={(e) => handleChange('enable', e.target.checked)}
-        />
-      </FormGroup>
-
-      <FormGroup label={t('workflow.panel.skip')}>
-        <Toggle checked={formData.skip} onChange={(e) => handleChange('skip', e.target.checked)} />
-      </FormGroup>
+      <EnableSkipOptions
+        enable={formData.enable}
+        skip={formData.skip}
+        onEnableChange={(v) => handleChange('enable', v)}
+        onSkipChange={(v) => handleChange('skip', v)}
+      />
 
       <FormGroup
         label={t('workflow.panel.timeout')}

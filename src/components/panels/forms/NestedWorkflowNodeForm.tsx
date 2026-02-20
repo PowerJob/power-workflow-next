@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { FormGroup, TextInput, SelectInput, Toggle, CodeEditor } from '.';
+import { FormGroup, TextInput, SelectInput, EnableSkipOptions, CodeEditor } from '.';
 import { WorkflowNodeData, WorkflowReferenceOption } from '../../../types/workflow';
 import { useLocale } from '../../../hooks/useLocale';
 import { ValidationRule, nodeName, json } from '../../../utils/validation';
@@ -180,6 +180,7 @@ export const NestedWorkflowNodeForm = ({
           onBlur={() => handleBlur('targetWorkflowId')}
           placeholder={t('workflow.panel.selectPlaceholder')}
           searchable
+          showIdAndName
           searchPlaceholder={t('workflow.panel.searchPlaceholder')}
           noResultsText={t('workflow.panel.searchNoResults')}
           disabled={!hasAvailableWorkflowOptions}
@@ -197,16 +198,12 @@ export const NestedWorkflowNodeForm = ({
           ) && <p className="mt-1 text-xs text-amber-500">{t('workflow.panel.legacyValueHint')}</p>}
       </FormGroup>
 
-      <FormGroup label={t('workflow.panel.enable')}>
-        <Toggle
-          checked={formData.enable}
-          onChange={(e) => handleChange('enable', e.target.checked)}
-        />
-      </FormGroup>
-
-      <FormGroup label={t('workflow.panel.skip')}>
-        <Toggle checked={formData.skip} onChange={(e) => handleChange('skip', e.target.checked)} />
-      </FormGroup>
+      <EnableSkipOptions
+        enable={formData.enable}
+        skip={formData.skip}
+        onEnableChange={(v) => handleChange('enable', v)}
+        onSkipChange={(v) => handleChange('skip', v)}
+      />
 
       <FormGroup
         label={t('workflow.panel.params')}
