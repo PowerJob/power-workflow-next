@@ -244,29 +244,43 @@ export const EditorPanel = forwardRef<EditorPanelRef, EditorPanelProps>(
     const nodeLabel = editedData.label?.trim() || t('workflow.panel.title');
 
     return (
-      <>
-        {/* 遮罩：点击关闭，聚焦编辑区域 */}
+      <div
+        className={clsx(
+          'fixed inset-0 z-[99] flex items-center justify-center p-4',
+          'transition-[visibility,opacity] duration-200 ease-out',
+          open ? 'visible opacity-100' : 'invisible opacity-0 pointer-events-none',
+        )}
+        aria-hidden={!open}
+      >
+        {/* 遮罩：点击关闭 */}
         <div
           role="presentation"
           aria-hidden
           className={clsx(
-            'fixed inset-0 z-[99] bg-black/20 transition-opacity duration-200 ease-in-out',
-            open ? 'opacity-100' : 'opacity-0 pointer-events-none',
+            'absolute inset-0 bg-black/40 transition-opacity duration-200 ease-out',
+            open ? 'opacity-100' : 'opacity-0',
           )}
           onClick={onClose}
         />
 
+        {/* 居中弹窗 */}
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="editor-panel-title"
           className={clsx(
-            'fixed top-0 right-0 h-full w-[320px] bg-white shadow-xl z-[100]',
-            'flex flex-col transition-transform duration-200 ease-in-out',
-            open ? 'translate-x-0' : 'translate-x-full',
+            'relative z-10 w-full max-w-[480px] max-h-[85vh] flex flex-col',
+            'bg-white rounded-xl shadow-2xl border border-gray-200/80',
+            'transition-[transform,opacity] duration-200 ease-out',
+            open ? 'scale-100 opacity-100' : 'scale-[0.98] opacity-0',
           )}
+          onClick={(e) => e.stopPropagation()}
         >
           {/* 头部：类型色条 + 节点名称 + 类型副标题 */}
           <div
+            id="editor-panel-title"
             className={clsx(
-              'flex items-start justify-between gap-3 pl-4 pr-3 py-3 border-b border-gray-200',
+              'flex items-start justify-between gap-3 pl-4 pr-3 py-3 border-b border-gray-200 rounded-t-xl',
               'bg-gray-50/90',
             )}
           >
@@ -282,74 +296,74 @@ export const EditorPanel = forwardRef<EditorPanelRef, EditorPanelProps>(
             <button
               type="button"
               onClick={handleCancel}
-              className="shrink-0 rounded p-1.5 text-gray-400 hover:bg-gray-200/80 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-1"
+              className="shrink-0 rounded-lg p-1.5 text-gray-400 hover:bg-gray-200/80 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-1"
               aria-label={t('workflow.panel.close')}
             >
               <X size={18} />
             </button>
           </div>
 
-        <div className="flex-1 overflow-y-auto p-4">
-          <NodeFormWrapper
-            type={node.data.type}
-            data={editedData}
-            onChange={handleDataChange}
-            onValidationChange={handleValidationChange}
-            jobOptions={jobOptions}
-            workflowOptions={workflowOptions}
-          />
-        </div>
+          <div className="flex-1 min-h-0 overflow-y-auto p-4">
+            <NodeFormWrapper
+              type={node.data.type}
+              data={editedData}
+              onChange={handleDataChange}
+              onValidationChange={handleValidationChange}
+              jobOptions={jobOptions}
+              workflowOptions={workflowOptions}
+            />
+          </div>
 
-        {showConfirmDialog && hasWarnings && (
-          <div className="p-4 bg-amber-50 border-t border-amber-200">
-            <p className="text-sm text-amber-700 mb-3">{t('workflow.panel.confirmSave')}</p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setShowConfirmDialog(false)}
-                className="flex-1 px-3 py-2 text-sm text-gray-600 bg-white border border-gray-200 rounded-md hover:bg-gray-50"
-              >
-                {t('workflow.panel.cancel')}
-              </button>
-              <button
-                onClick={handleSave}
-                className="flex-1 px-3 py-2 text-sm text-white bg-amber-500 rounded-md hover:bg-amber-600"
-              >
-                {t('workflow.panel.continue')}
-              </button>
+          {showConfirmDialog && hasWarnings && (
+            <div className="p-4 bg-amber-50 border-t border-amber-200">
+              <p className="text-sm text-amber-700 mb-3">{t('workflow.panel.confirmSave')}</p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowConfirmDialog(false)}
+                  className="flex-1 px-3 py-2 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50"
+                >
+                  {t('workflow.panel.cancel')}
+                </button>
+                <button
+                  onClick={handleSave}
+                  className="flex-1 px-3 py-2 text-sm text-white bg-amber-500 rounded-lg hover:bg-amber-600"
+                >
+                  {t('workflow.panel.continue')}
+                </button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {hasErrors && !showConfirmDialog && (
-          <div className="p-3 bg-red-50 border-t border-red-200">
-            <p className="text-xs text-red-500">{Object.values(errors).join('; ')}</p>
-          </div>
-        )}
+          {hasErrors && !showConfirmDialog && (
+            <div className="p-3 bg-red-50 border-t border-red-200">
+              <p className="text-xs text-red-500">{Object.values(errors).join('; ')}</p>
+            </div>
+          )}
 
-        <div className="flex gap-2 border-t border-gray-200 bg-gray-50/90 p-4 shadow-[0_-1px_3px_rgba(0,0,0,0.04)]">
-          <button
-            type="button"
-            onClick={handleCancel}
-            className="flex-1 px-3 py-2 text-sm text-gray-600 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-1"
-          >
-            {t('workflow.panel.cancel')}
-          </button>
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={hasErrors || isSaving}
-            className={clsx(
-              'flex-1 px-3 py-2 text-sm text-white rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1',
-              hasErrors || isSaving
-                ? 'bg-gray-300 cursor-not-allowed focus:ring-gray-300'
-                : 'bg-blue-500 hover:bg-blue-600 focus:ring-blue-400',
-            )}
-          >
-            {isSaving ? '...' : t('workflow.panel.save')}
-          </button>
+          <div className="flex gap-2 border-t border-gray-200 bg-gray-50/90 p-4 rounded-b-xl shrink-0">
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="flex-1 px-3 py-2 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-1"
+            >
+              {t('workflow.panel.cancel')}
+            </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={hasErrors || isSaving}
+              className={clsx(
+                'flex-1 px-3 py-2 text-sm text-white rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1',
+                hasErrors || isSaving
+                  ? 'bg-gray-300 cursor-not-allowed focus:ring-gray-300'
+                  : 'bg-blue-500 hover:bg-blue-600 focus:ring-blue-400',
+              )}
+            >
+              {isSaving ? '...' : t('workflow.panel.save')}
+            </button>
+          </div>
         </div>
       </div>
-      </>
     );
   },
 );
