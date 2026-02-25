@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { Position, NodeProps } from '@xyflow/react';
 import WorkflowHandle from './WorkflowHandle';
-import { ClipboardList } from 'lucide-react';
+import { ClipboardList, SkipForward } from 'lucide-react';
 import { WorkflowNode, NodeStatus } from '../../types/workflow';
 import { useLocale } from '../../hooks/useLocale';
 import { clsx } from 'clsx';
@@ -30,6 +30,7 @@ const JobNode = ({ data, selected, mode = 'edit' }: JobNodeProps) => {
   const statusText = getNodeStatusText(data.status, t);
 
   const hasExecutionInfo = data.execution && (data.execution.duration || data.execution.startTime);
+  const isDisabled = data.enable === false || data.disableByControlNode;
 
   const nodeContent = (
     <div
@@ -37,9 +38,10 @@ const JobNode = ({ data, selected, mode = 'edit' }: JobNodeProps) => {
         'relative flex flex-col rounded-md border-2 transition-all',
         'w-[200px] h-[56px] px-3',
         statusStyles.bg,
-        statusStyles.border,
+        isDisabled ? 'border-dashed opacity-60' : 'border-solid',
+        !isDisabled && statusStyles.border,
         selected && 'ring-2 ring-blue-200 shadow-md',
-        !selected && !isView && 'hover:border-blue-300',
+        !selected && !isView && !isDisabled && 'hover:border-blue-300',
         isRunning && 'node-running',
       )}
     >
@@ -81,6 +83,12 @@ const JobNode = ({ data, selected, mode = 'edit' }: JobNodeProps) => {
           </div>
         </div>
       </div>
+
+      {data.skip && (
+        <div className="absolute bottom-2 right-2 z-10">
+          <SkipForward size={14} className="text-orange-400" />
+        </div>
+      )}
 
       <WorkflowHandle type="source" position={Position.Right} id="right" />
       <WorkflowHandle type="source" position={Position.Bottom} id="bottom" />

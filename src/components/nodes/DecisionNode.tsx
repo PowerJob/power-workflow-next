@@ -26,9 +26,10 @@ const DecisionNode = ({ data, selected, mode = 'edit' }: DecisionNodeProps) => {
   const statusStyles = getNodeStatusTone(data.status);
   const statusText = getNodeStatusText(data.status, t);
   const isRunning = data.status === NodeStatus.RUNNING;
+  const isDisabled = data.enable === false || data.disableByControlNode;
 
   return (
-    <div className="relative w-20 h-14 flex items-center justify-center" style={{ width: 80, height: 56 }}>
+    <div className={clsx("relative w-20 h-14 flex items-center justify-center", isDisabled && "opacity-60")} style={{ width: 80, height: 56 }}>
       <WorkflowHandle type={sideHandleType} position={Position.Top} id="top" className="z-10" />
       <WorkflowHandle type={sideHandleType} position={Position.Left} id="left" className="z-10" />
 
@@ -48,9 +49,10 @@ const DecisionNode = ({ data, selected, mode = 'edit' }: DecisionNodeProps) => {
         className={clsx(
           'absolute w-14 h-14 border-2 transition-all transform rotate-45 flex items-center justify-center',
           statusStyles.bg,
-          statusStyles.border,
+          isDisabled ? 'border-dashed' : 'border-solid',
+          !isDisabled && statusStyles.border,
           selected && 'ring-2 ring-blue-200 shadow-md',
-          !selected && 'hover:border-blue-300',
+          !selected && !isDisabled && 'hover:border-blue-300',
           isRunning && 'node-running',
         )}
       >

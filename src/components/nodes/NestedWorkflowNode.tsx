@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { Position, NodeProps } from '@xyflow/react';
 import WorkflowHandle from './WorkflowHandle';
-import { Layers } from 'lucide-react';
+import { Layers, SkipForward } from 'lucide-react';
 import { WorkflowNode, NodeStatus } from '../../types/workflow';
 import { useLocale } from '../../hooks/useLocale';
 import { clsx } from 'clsx';
@@ -29,15 +29,17 @@ const NestedWorkflowNode = ({ data, selected, mode = 'edit' }: NestedWorkflowNod
   const isRunning = data.status === NodeStatus.RUNNING;
   const isView = mode === 'view';
   const hasExecutionInfo = data.execution && (data.execution.duration ?? data.execution.startTime);
+  const isDisabled = data.enable === false || data.disableByControlNode;
 
   const nodeContent = (
     <div
       className={clsx(
         'relative flex items-center rounded-md border-2 transition-all',
         statusStyles.bg,
-        statusStyles.border,
+        isDisabled ? 'border-dashed opacity-60' : 'border-solid',
+        !isDisabled && statusStyles.border,
         selected && 'ring-2 ring-blue-200 shadow-md',
-        !selected && !isView && 'hover:border-blue-300',
+        !selected && !isView && !isDisabled && 'hover:border-blue-300',
         isRunning && 'node-running',
         'w-[200px] h-[56px] px-3',
       )}
@@ -75,6 +77,12 @@ const NestedWorkflowNode = ({ data, selected, mode = 'edit' }: NestedWorkflowNod
           )}
         </div>
       </div>
+
+      {data.skip && (
+        <div className="absolute bottom-2 right-2 z-10">
+          <SkipForward size={14} className="text-orange-400" />
+        </div>
+      )}
 
       <WorkflowHandle type="source" position={Position.Right} id="right" />
       <WorkflowHandle type="source" position={Position.Bottom} id="bottom" />
