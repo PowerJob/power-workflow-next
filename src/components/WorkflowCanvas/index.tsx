@@ -436,6 +436,19 @@ const WorkflowCanvasInner = ({
         target: candidate.target,
         targetHandle: candidate.targetHandle ?? null,
       };
+      if (!connection.source || !connection.target || connection.source === connection.target) {
+        return false;
+      }
+
+      const existsBetweenNodes = safeEdges.some(
+        (edge) =>
+          (edge.source === connection.source && edge.target === connection.target) ||
+          (edge.source === connection.target && edge.target === connection.source),
+      );
+      if (existsBetweenNodes) {
+        return false;
+      }
+
       const sourceNode = safeNodes.find((n) => n.id === connection.source);
       if (sourceNode?.data?.type === NodeType.DECISION) {
         const outgoingCount = safeEdges.filter((e) => e.source === connection.source).length;
