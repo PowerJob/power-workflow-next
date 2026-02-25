@@ -215,6 +215,7 @@ export const NestedWorkflowNodeForm = ({
           placeholder='{"key": "value"}'
           height={150}
           showLineNumbers={false}
+          jsonMode
           error={!!errors.params && touched.params}
         />
       </FormGroup>

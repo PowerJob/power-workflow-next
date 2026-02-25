@@ -23,6 +23,8 @@ export const enUS: Record<LocaleKey, string> = {
   'workflow.panel.skipYes': 'Skip on fail',
   'workflow.panel.timeout': 'Timeout (s)',
   'workflow.panel.params': 'Parameters',
+  'workflow.panel.jsonFormat': 'Format',
+  'workflow.panel.jsonCompress': 'Compress',
   'workflow.panel.condition': 'Condition',
   'workflow.panel.target': 'Target Workflow',
   'workflow.panel.jobId': 'Target Job',

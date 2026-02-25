@@ -21,6 +21,8 @@ export const zhCN = {
   'workflow.panel.skipYes': '失败时跳过',
   'workflow.panel.timeout': '超时时间(秒)',
   'workflow.panel.params': '节点参数',
+  'workflow.panel.jsonFormat': '格式化',
+  'workflow.panel.jsonCompress': '压缩',
   'workflow.panel.condition': '判断条件',
   'workflow.panel.target': '目标工作流',
   'workflow.panel.jobId': '目标任务',

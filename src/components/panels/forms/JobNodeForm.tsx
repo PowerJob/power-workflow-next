@@ -253,6 +253,7 @@ export const JobNodeForm = ({ data, onChange, onValidationChange, jobOptions = [
           placeholder='{"key": "value"}'
           height={150}
           showLineNumbers={false}
+          jsonMode
           error={!!errors.params && touched.params}
         />
       </FormGroup>
