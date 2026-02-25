@@ -12,7 +12,6 @@ import {
   WorkflowReferenceOption,
   NodeType,
   assignOptimalHandles,
-  getSnapHandlesForEdge,
   generateNodeId,
   createDefaultNodeData,
   exportToJSON,
@@ -200,27 +199,8 @@ const PlaygroundInner = () => {
   );
 
   const onConnect = useCallback(
-    (params: Connection) => {
-      const sourceNode = nodes.find((n) => n.id === params.source);
-      const targetNode = nodes.find((n) => n.id === params.target);
-      const { sourceHandleId, targetHandleId } =
-        sourceNode && targetNode
-          ? getSnapHandlesForEdge(sourceNode, targetNode, {
-              direction: layoutDirection,
-            })
-          : {};
-      setEdges((eds) =>
-        addEdge(
-          {
-            ...params,
-            sourceHandle: sourceHandleId ?? params.sourceHandle,
-            targetHandle: targetHandleId ?? params.targetHandle,
-          },
-          eds,
-        ),
-      );
-    },
-    [nodes, layoutDirection, setEdges],
+    (params: Connection) => setEdges((eds) => addEdge(params, eds)),
+    [setEdges],
   );
 
   const handleScenarioChange = (newScenario: typeof scenario) => {

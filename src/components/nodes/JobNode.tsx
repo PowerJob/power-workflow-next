@@ -24,6 +24,7 @@ const JobNode = ({ data, selected, mode = 'edit' }: JobNodeProps) => {
   const { t } = useLocale();
   const label = data.label || t('workflow.node.job');
   const isView = mode === 'view';
+  const sideHandleType = mode === 'edit' ? 'source' : 'target';
   const statusStyles = getNodeStatusTone(data.status);
   const isRunning = data.status === NodeStatus.RUNNING;
   const statusText = getNodeStatusText(data.status, t);
@@ -42,8 +43,8 @@ const JobNode = ({ data, selected, mode = 'edit' }: JobNodeProps) => {
         isRunning && 'node-running',
       )}
     >
-      <WorkflowHandle type="target" position={Position.Top} id="top" />
-      <WorkflowHandle type="target" position={Position.Left} id="left" />
+      <WorkflowHandle type={sideHandleType} position={Position.Top} id="top" />
+      <WorkflowHandle type={sideHandleType} position={Position.Left} id="left" />
 
       {statusText && (
         <div

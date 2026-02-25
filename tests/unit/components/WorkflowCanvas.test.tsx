@@ -1,5 +1,6 @@
 import { render } from '@testing-library/react';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { ConnectionMode, type Connection } from '@xyflow/react';
 import { NodeType } from '@/types/workflow';
 import WorkflowCanvas from '@/components/WorkflowCanvas';
 
@@ -67,5 +68,48 @@ describe('WorkflowCanvas marker color', () => {
 
     const props = mockReactFlowProps.current as { edges?: Array<{ markerEnd?: { color?: string } }> } | undefined;
     expect(props?.edges?.[0]?.markerEnd?.color).toBe('#52C41A');
+  });
+
+  it('preserves reverse drag connection direction before calling onConnect', () => {
+    const onConnect = vi.fn();
+    render(
+      <WorkflowCanvas
+        nodes={[
+          {
+            id: 'A',
+            type: NodeType.JOB,
+            position: { x: 0, y: 0 },
+            data: { label: 'A', type: NodeType.JOB },
+          },
+          {
+            id: 'B',
+            type: NodeType.JOB,
+            position: { x: 200, y: 0 },
+            data: { label: 'B', type: NodeType.JOB },
+          },
+        ]}
+        edges={[]}
+        mode="edit"
+        onConnect={onConnect}
+      />,
+    );
+
+    const props = mockReactFlowProps.current as
+      | { onConnect?: (connection: Connection) => void; connectionMode?: unknown }
+      | undefined;
+    props?.onConnect?.({
+      source: 'B',
+      sourceHandle: 'left',
+      target: 'A',
+      targetHandle: 'right',
+    });
+
+    expect(onConnect).toHaveBeenCalledWith({
+      source: 'B',
+      sourceHandle: 'left',
+      target: 'A',
+      targetHandle: 'right',
+    });
+    expect(props?.connectionMode).toBe(ConnectionMode.Loose);
   });
 });

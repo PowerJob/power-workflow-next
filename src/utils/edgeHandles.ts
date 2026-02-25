@@ -3,6 +3,7 @@
  * @author Echo009
  */
 import { WorkflowNode, WorkflowEdge } from '../types/workflow';
+import type { Connection } from '@xyflow/react';
 
 type SourceHandleId = 'right' | 'bottom';
 type TargetHandleId = 'left' | 'top';
@@ -20,6 +21,37 @@ export interface SnapEdgeHandlesOptions extends EdgeHandlesOptions {
 }
 
 const AXIS_SWITCH_THRESHOLD = 1.15;
+const OUTPUT_HANDLES = new Set(['right', 'bottom']);
+const INPUT_HANDLES = new Set(['left', 'top']);
+
+/**
+ * 归一化连接方向：保证 source 来自输出锚点（right/bottom），target 落在输入锚点（left/top）。
+ * 这样即使用户从输入锚点起手拖拽，也会得到符合语义的边方向。
+ */
+export function normalizeConnectionDirection(connection: Connection): Connection {
+  const { source, sourceHandle, target, targetHandle } = connection;
+  if (!source || !target) return connection;
+
+  const sourceIsInput = !!sourceHandle && INPUT_HANDLES.has(sourceHandle);
+  const targetIsOutput = !!targetHandle && OUTPUT_HANDLES.has(targetHandle);
+
+  const shouldReverse =
+    (sourceIsInput && targetIsOutput) ||
+    (sourceIsInput && !targetHandle) ||
+    (!sourceHandle && targetIsOutput);
+
+  if (!shouldReverse) {
+    return connection;
+  }
+
+  return {
+    ...connection,
+    source: target,
+    sourceHandle: targetHandle,
+    target: source,
+    targetHandle: sourceHandle,
+  };
+}
 
 const getRelativeHandlesForEdge = (
   sourceNode: WorkflowNode,

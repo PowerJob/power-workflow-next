@@ -58,7 +58,12 @@ export { useNodeSearch } from './hooks/useNodeSearch';
 export { useWorkflowStore, getWorkflowState, setWorkflowState } from './stores/workflowStore';
 
 export { layoutNodes } from './utils/layout';
-export { assignOptimalHandles, getOptimalHandlesForEdge, getSnapHandlesForEdge } from './utils/edgeHandles';
+export {
+  assignOptimalHandles,
+  getOptimalHandlesForEdge,
+  getSnapHandlesForEdge,
+  normalizeConnectionDirection,
+} from './utils/edgeHandles';
 export {
   detectCycle,
   checkDecisionNodeExits,

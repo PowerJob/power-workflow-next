@@ -23,6 +23,7 @@ interface NestedWorkflowNodeProps extends NodeProps<WorkflowNode> {
 const NestedWorkflowNode = ({ data, selected, mode = 'edit' }: NestedWorkflowNodeProps) => {
   const { t } = useLocale();
   const label = data.label || t('workflow.node.nested');
+  const sideHandleType = mode === 'edit' ? 'source' : 'target';
   const statusStyles = getNodeStatusTone(data.status);
   const statusText = getNodeStatusText(data.status, t);
   const isRunning = data.status === NodeStatus.RUNNING;
@@ -41,8 +42,8 @@ const NestedWorkflowNode = ({ data, selected, mode = 'edit' }: NestedWorkflowNod
         'w-[200px] h-[56px] px-3',
       )}
     >
-      <WorkflowHandle type="target" position={Position.Top} id="top" />
-      <WorkflowHandle type="target" position={Position.Left} id="left" />
+      <WorkflowHandle type={sideHandleType} position={Position.Top} id="top" />
+      <WorkflowHandle type={sideHandleType} position={Position.Left} id="left" />
 
       {statusText && (
         <div

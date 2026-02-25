@@ -3,6 +3,7 @@ import {
   getOptimalHandlesForEdge,
   getSnapHandlesForEdge,
   assignOptimalHandles,
+  normalizeConnectionDirection,
 } from '@/utils/edgeHandles';
 import { NodeType, type WorkflowNode, type WorkflowEdge } from '@/types/workflow';
 
@@ -157,6 +158,55 @@ describe('edgeHandles', () => {
       });
       expect(result.sourceHandleId).toBe('right');
       expect(result.targetHandleId).toBe('left');
+    });
+  });
+
+  describe('normalizeConnectionDirection', () => {
+    it('should reverse connection when dragging from input handle to output handle', () => {
+      const result = normalizeConnectionDirection({
+        source: 'B',
+        sourceHandle: 'left',
+        target: 'A',
+        targetHandle: 'right',
+      });
+
+      expect(result).toEqual({
+        source: 'A',
+        sourceHandle: 'right',
+        target: 'B',
+        targetHandle: 'left',
+      });
+    });
+
+    it('should keep connection when source is output handle and target is input handle', () => {
+      const result = normalizeConnectionDirection({
+        source: 'A',
+        sourceHandle: 'right',
+        target: 'B',
+        targetHandle: 'left',
+      });
+
+      expect(result).toEqual({
+        source: 'A',
+        sourceHandle: 'right',
+        target: 'B',
+        targetHandle: 'left',
+      });
+    });
+
+    it('should reverse connection when source starts from input handle and target handle is missing', () => {
+      const result = normalizeConnectionDirection({
+        source: 'B',
+        sourceHandle: 'left',
+        target: 'A',
+      });
+
+      expect(result).toEqual({
+        source: 'A',
+        sourceHandle: undefined,
+        target: 'B',
+        targetHandle: 'left',
+      });
     });
   });
 });

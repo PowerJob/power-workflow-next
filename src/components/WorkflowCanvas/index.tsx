@@ -7,6 +7,7 @@ import {
   useReactFlow,
   useViewport,
   MarkerType,
+  ConnectionMode,
   type NodeChange,
   type EdgeChange,
 } from '@xyflow/react';
@@ -131,6 +132,7 @@ const WorkflowCanvasInner = ({
   connectSnapDirection = 'horizontal',
   fitView: fitViewProp,
   isValidConnection: userIsValidConnection,
+  defaultLocale: _defaultLocale,
   ...props
 }: WorkflowNextProps) => {
   const { t } = useLocale();
@@ -138,6 +140,10 @@ const WorkflowCanvasInner = ({
   const isView = mode === 'view';
   const safeNodes = nodes ?? [];
   const safeEdges = edges ?? [];
+  const safeEdgesRef = useRef(safeEdges);
+  useEffect(() => {
+    safeEdgesRef.current = safeEdges;
+  }, [safeEdges]);
   const edgesWithMarkerColor = useMemo(() => {
     const getEdgeStrokeColor = (edge: WorkflowEdge) => {
       const sourceNode = safeNodes.find((node) => node.id === edge.source);
@@ -324,10 +330,11 @@ const WorkflowCanvasInner = ({
     (edgeId: string) => {
       if (!onEdgesChange) return;
 
-      const index = safeEdges.findIndex((edge) => edge.id === edgeId);
+      const currentEdges = safeEdgesRef.current;
+      const index = currentEdges.findIndex((edge) => edge.id === edgeId);
       if (index < 0) return;
 
-      const edge = safeEdges[index];
+      const edge = currentEdges[index];
       const currentProperty = ((edge.data as WorkflowEdgeData | undefined)?.property ?? '') as '' | 'true' | 'false';
       const nextProperty = currentProperty === '' ? 'true' : currentProperty === 'true' ? 'false' : '';
       const updatedEdge: WorkflowEdge = {
@@ -349,7 +356,7 @@ const WorkflowCanvasInner = ({
 
       onEdgesChange(changes);
     },
-    [safeEdges, onEdgesChange],
+    [onEdgesChange],
   );
 
   const shortcuts = useMemo(
@@ -432,7 +439,9 @@ const WorkflowCanvasInner = ({
       const sourceNode = safeNodes.find((n) => n.id === connection.source);
       if (sourceNode?.data?.type === NodeType.DECISION) {
         const outgoingCount = safeEdges.filter((e) => e.source === connection.source).length;
-        if (outgoingCount >= 2) return false;
+        if (outgoingCount >= 2) {
+          return false;
+        }
       }
       return userIsValidConnection ? userIsValidConnection(connection as any) : true;
     },
@@ -571,6 +580,7 @@ const WorkflowCanvasInner = ({
                 height: 11,
               },
             }}
+            connectionMode={ConnectionMode.Loose}
             isValidConnection={isValidConnection}
             fitView={fitViewProp ?? false}
             minZoom={0.25}

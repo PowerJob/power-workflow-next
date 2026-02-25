@@ -19,17 +19,18 @@ interface DecisionNodeProps extends NodeProps<WorkflowNode> {
   mode?: 'edit' | 'view';
 }
 
-const DecisionNode = ({ data, selected }: DecisionNodeProps) => {
+const DecisionNode = ({ data, selected, mode = 'edit' }: DecisionNodeProps) => {
   const { t } = useLocale();
   const label = data.label || t('workflow.node.decision');
+  const sideHandleType = mode === 'edit' ? 'source' : 'target';
   const statusStyles = getNodeStatusTone(data.status);
   const statusText = getNodeStatusText(data.status, t);
   const isRunning = data.status === NodeStatus.RUNNING;
 
   return (
     <div className="relative w-20 h-14 flex items-center justify-center" style={{ width: 80, height: 56 }}>
-      <WorkflowHandle type="target" position={Position.Top} id="top" className="z-10" />
-      <WorkflowHandle type="target" position={Position.Left} id="left" className="z-10" />
+      <WorkflowHandle type={sideHandleType} position={Position.Top} id="top" className="z-10" />
+      <WorkflowHandle type={sideHandleType} position={Position.Left} id="left" className="z-10" />
 
       {statusText && (
         <div
