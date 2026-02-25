@@ -1,5 +1,16 @@
-import { InputHTMLAttributes, Ref, SelectHTMLAttributes, forwardRef, useId, useState, useEffect } from 'react';
+import {
+  InputHTMLAttributes,
+  Ref,
+  SelectHTMLAttributes,
+  forwardRef,
+  useId,
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+} from 'react';
 import { clsx } from 'clsx';
+import { ChevronDown } from 'lucide-react';
 import { WorkflowReferenceOption } from '../../../types/workflow';
 
 interface SelectInputProps
@@ -27,7 +38,7 @@ export const SelectInput = forwardRef<HTMLInputElement | HTMLSelectElement, Sele
       placeholder,
       searchable = false,
       searchPlaceholder,
-      noResultsText: _noResultsText,
+      noResultsText = '',
       showIdAndName = false,
       error,
       warning,
@@ -35,12 +46,17 @@ export const SelectInput = forwardRef<HTMLInputElement | HTMLSelectElement, Sele
       onChange,
       onBlur,
       onFocus,
+      disabled,
       ...props
     },
     ref,
   ) => {
     const listId = useId();
+    const containerRef = useRef<HTMLDivElement>(null);
+    const listRef = useRef<HTMLUListElement>(null);
     const [searchInput, setSearchInput] = useState<string | null>(null);
+    const [open, setOpen] = useState(false);
+    const [highlightIndex, setHighlightIndex] = useState(-1);
 
     const selectedOption = options.find((o) => String(o.value) === String(value));
     const displayValue =
@@ -52,21 +68,61 @@ export const SelectInput = forwardRef<HTMLInputElement | HTMLSelectElement, Sele
             : String(value ?? '')
         : value ?? '';
 
+    const query = typeof displayValue === 'string' ? displayValue.trim().toLowerCase() : '';
+    const filteredOptions = query
+      ? options.filter(
+          (o) =>
+            String(o.value).toLowerCase().includes(query) ||
+            (o.label && o.label.toLowerCase().includes(query)),
+        )
+      : options;
+
     useEffect(() => {
       if (showIdAndName && searchable) setSearchInput(null);
     }, [value, showIdAndName, searchable]);
 
+    useEffect(() => {
+      if (open) setHighlightIndex(-1);
+    }, [open, query]);
+
+    const closeDropdown = useCallback(() => setOpen(false), []);
+
+    useEffect(() => {
+      if (!open) return;
+      const handleClickOutside = (e: MouseEvent) => {
+        if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+          closeDropdown();
+        }
+      };
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [open, closeDropdown]);
+
+    const baseInputStyles =
+      'w-full h-9 text-sm rounded-md border transition-all outline-none bg-white text-gray-700 placeholder:text-gray-400 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed';
+    const stateStyles = error
+      ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-100'
+      : warning
+        ? 'border-amber-500 focus:border-amber-500 focus:ring-2 focus:ring-amber-100'
+        : 'border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100';
     const inputClassName = clsx(
-      'w-full h-9 px-3 text-sm rounded-md border transition-all outline-none',
-      'bg-white text-gray-700 placeholder:text-gray-400',
+      baseInputStyles,
+      stateStyles,
+      searchable ? 'pl-3 pr-9' : 'px-3',
       showIdAndName && searchable && 'truncate',
-      error
-        ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-100'
-        : warning
-          ? 'border-amber-500 focus:border-amber-500 focus:ring-2 focus:ring-amber-100'
-          : 'border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100',
-      'disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed',
       className,
+    );
+
+    const selectOption = useCallback(
+      (option: WorkflowReferenceOption) => {
+        const syntheticEvent = {
+          target: { value: String(option.value) },
+        } as React.ChangeEvent<HTMLInputElement>;
+        onChange?.(syntheticEvent);
+        if (showIdAndName) setSearchInput(null);
+        closeDropdown();
+      },
+      [onChange, showIdAndName, closeDropdown],
     );
 
     if (searchable) {
@@ -83,21 +139,59 @@ export const SelectInput = forwardRef<HTMLInputElement | HTMLSelectElement, Sele
         } else {
           onChange?.(e);
         }
+        setOpen(true);
       };
       const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
         if (showIdAndName) setSearchInput(selectedOption?.label ?? '');
+        setOpen(true);
         onFocus?.(e);
       };
       const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
         if (showIdAndName) setSearchInput(null);
         onBlur?.(e);
+        const relatedTarget = (e as React.FocusEvent<HTMLInputElement>).relatedTarget;
+        if (containerRef.current?.contains(relatedTarget as Node)) return;
+        setTimeout(closeDropdown, 150);
+      };
+      const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (!open && e.key !== 'Escape') return;
+        switch (e.key) {
+          case 'ArrowDown':
+            e.preventDefault();
+            setHighlightIndex((i) =>
+              i < filteredOptions.length - 1 ? i + 1 : i,
+            );
+            break;
+          case 'ArrowUp':
+            e.preventDefault();
+            setHighlightIndex((i) => (i > 0 ? i - 1 : -1));
+            break;
+          case 'Enter':
+            if (highlightIndex >= 0 && filteredOptions[highlightIndex]) {
+              e.preventDefault();
+              selectOption(filteredOptions[highlightIndex]);
+            }
+            break;
+          case 'Escape':
+            e.preventDefault();
+            closeDropdown();
+            setHighlightIndex(-1);
+            break;
+          default:
+            break;
+        }
       };
 
+      useEffect(() => {
+        if (highlightIndex < 0 || !listRef.current) return;
+        const el = listRef.current.children[highlightIndex] as HTMLElement;
+        el?.scrollIntoView({ block: 'nearest' });
+      }, [highlightIndex]);
+
       return (
-        <>
+        <div ref={containerRef} className="relative w-full">
           <input
             ref={ref as Ref<HTMLInputElement>}
-            list={listId}
             value={displayValue}
             placeholder={searchPlaceholder ?? placeholder}
             title={typeof displayValue === 'string' && displayValue.length > 0 ? displayValue : undefined}
@@ -105,16 +199,68 @@ export const SelectInput = forwardRef<HTMLInputElement | HTMLSelectElement, Sele
             onChange={handleChange}
             onFocus={handleFocus}
             onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            disabled={disabled}
+            aria-expanded={open}
+            aria-controls={listId}
+            aria-autocomplete="list"
+            aria-activedescendant={
+              highlightIndex >= 0 && filteredOptions[highlightIndex]
+                ? `${listId}-option-${filteredOptions[highlightIndex].value}`
+                : undefined
+            }
+            role="combobox"
             {...props}
           />
-          <datalist id={listId}>
-            {options.map((option) => (
-              <option key={String(option.value)} value={String(option.value)}>
-                {option.label}
-              </option>
-            ))}
-          </datalist>
-        </>
+          <span
+            className={clsx(
+              'pointer-events-none absolute right-2 top-1/2 -translate-y-1/2',
+              'text-gray-400 transition-colors',
+              open && !error && !warning && 'text-blue-500',
+            )}
+            aria-hidden
+          >
+            <ChevronDown className="h-4 w-4" />
+          </span>
+          {open && !disabled && (
+            <ul
+              id={listId}
+              ref={listRef}
+              role="listbox"
+              className={clsx(
+                'absolute left-0 right-0 top-full z-10 mt-1 max-h-60 overflow-y-auto rounded-md border border-gray-200 bg-white py-1 shadow-lg',
+              )}
+            >
+              {filteredOptions.length === 0 ? (
+                <li className="px-3 py-3 text-sm text-gray-400" role="status">
+                  {noResultsText}
+                </li>
+              ) : (
+                filteredOptions.map((option, index) => (
+                  <li
+                    key={String(option.value)}
+                    id={`${listId}-option-${option.value}`}
+                    role="option"
+                    aria-selected={String(option.value) === String(value)}
+                    className={clsx(
+                      'cursor-pointer px-3 py-2 text-sm transition-colors',
+                      index === highlightIndex
+                        ? 'bg-blue-50 text-blue-700'
+                        : 'text-gray-700 hover:bg-gray-50',
+                      option.disabled && 'cursor-not-allowed opacity-50',
+                    )}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      if (!option.disabled) selectOption(option);
+                    }}
+                  >
+                    {option.label}
+                  </li>
+                ))
+              )}
+            </ul>
+          )}
+        </div>
       );
     }
 
@@ -123,6 +269,7 @@ export const SelectInput = forwardRef<HTMLInputElement | HTMLSelectElement, Sele
         ref={ref as Ref<HTMLSelectElement>}
         value={value ?? ''}
         className={inputClassName}
+        disabled={disabled}
         {...props}
       >
         {placeholder ? (
