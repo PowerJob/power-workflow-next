@@ -197,6 +197,12 @@ power-workflow-next/
 │   ├── types/                 # TypeScript 类型
 │   ├── locales/               # 国际化
 │   └── styles/                # 样式文件
+├── tests/
+│   ├── setup.ts               # 测试环境配置
+│   └── unit/                  # 单元测试
+│       ├── components/        # 组件测试
+│       ├── stores/            # 状态管理测试
+│       └── utils/             # 工具函数测试
 ├── docs/                      # 文档
 ├── package.json
 ├── vite.config.ts

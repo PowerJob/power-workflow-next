@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { act } from '@testing-library/react';
-import { useWorkflowStore, getWorkflowState, setWorkflowState } from '../workflowStore';
-import { NodeType, type WorkflowNode, type WorkflowEdge } from '../../types/workflow';
+import { useWorkflowStore, getWorkflowState, setWorkflowState } from '@/stores/workflowStore';
+import { NodeType, type WorkflowNode, type WorkflowEdge } from '@/types/workflow';
 
 describe('workflowStore', () => {
   const createMockNode = (id: string): WorkflowNode => ({

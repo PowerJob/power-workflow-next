@@ -8,8 +8,8 @@ import {
   generateEdgeId,
   createDefaultNodeData,
   deepClone,
-} from '../workflow';
-import { NodeType, type WorkflowNode, type WorkflowEdge } from '../../types/workflow';
+} from '@/utils/workflow';
+import { NodeType, type WorkflowNode, type WorkflowEdge } from '@/types/workflow';
 
 describe('workflow', () => {
   describe('detectCycle', () => {

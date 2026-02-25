@@ -1,9 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import { ReactFlowProvider } from '@xyflow/react';
 import { describe, it, expect } from 'vitest';
-import DecisionNode from './DecisionNode';
-import { NodeType, NodeStatus } from '../../types/workflow';
-import { LocaleProvider } from '../../contexts/LocaleContext';
+import DecisionNode from '@/components/nodes/DecisionNode';
+import { NodeType, NodeStatus } from '@/types/workflow';
+import { LocaleProvider } from '@/contexts/LocaleContext';
 
 const renderNode = (props: any) => {
   return render(

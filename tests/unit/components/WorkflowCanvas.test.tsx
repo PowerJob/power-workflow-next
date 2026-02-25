@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { NodeType } from '../../types/workflow';
-import WorkflowCanvas from './index';
+import { NodeType } from '@/types/workflow';
+import WorkflowCanvas from '@/components/WorkflowCanvas';
 
 const mockReactFlowProps = vi.hoisted(() => ({
   current: undefined as Record<string, unknown> | undefined,
@@ -69,4 +69,3 @@ describe('WorkflowCanvas marker color', () => {
     expect(props?.edges?.[0]?.markerEnd?.color).toBe('#52C41A');
   });
 });
-

@@ -1,9 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import { ReactFlowProvider } from '@xyflow/react';
 import { describe, it, expect } from 'vitest';
-import JobNode from './JobNode';
-import { NodeType, NodeStatus } from '../../types/workflow';
-import { LocaleProvider } from '../../contexts/LocaleContext';
+import JobNode from '@/components/nodes/JobNode';
+import { NodeType, NodeStatus } from '@/types/workflow';
+import { LocaleProvider } from '@/contexts/LocaleContext';
 
 const renderNode = (props: any) => {
   return render(

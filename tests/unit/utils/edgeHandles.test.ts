@@ -3,8 +3,8 @@ import {
   getOptimalHandlesForEdge,
   getSnapHandlesForEdge,
   assignOptimalHandles,
-} from '../edgeHandles';
-import { NodeType, type WorkflowNode, type WorkflowEdge } from '../../types/workflow';
+} from '@/utils/edgeHandles';
+import { NodeType, type WorkflowNode, type WorkflowEdge } from '@/types/workflow';
 
 const createMockNode = (
   id: string,

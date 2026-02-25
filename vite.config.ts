@@ -17,7 +17,9 @@ export default defineConfig(({ mode }) => {
     test: {
       globals: true,
       environment: 'jsdom',
-      setupFiles: './src/setupTests.ts',
+      setupFiles: './tests/setup.ts',
+      include: ['tests/unit/**/*.test.{ts,tsx}'],
+      root: '.',
     },
     ...(isLib && {
       root: undefined,

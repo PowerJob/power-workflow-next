@@ -1,9 +1,9 @@
 import { render } from '@testing-library/react';
 import { MarkerType, ReactFlowProvider } from '@xyflow/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import CustomEdge from './CustomEdge';
-import { LocaleProvider } from '../../contexts/LocaleContext';
-import { NodeType } from '../../types/workflow';
+import CustomEdge from '@/components/edges/CustomEdge';
+import { LocaleProvider } from '@/contexts/LocaleContext';
+import { NodeType } from '@/types/workflow';
 
 const mockGetNodeReturn = vi.hoisted(() => ({ current: undefined as { data: { type: string } } | undefined }));
 

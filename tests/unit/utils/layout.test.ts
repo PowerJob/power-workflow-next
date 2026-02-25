@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { layoutNodes } from '../layout';
-import { NodeType, type WorkflowNode, type WorkflowEdge } from '../../types/workflow';
+import { layoutNodes } from '@/utils/layout';
+import { NodeType, type WorkflowNode, type WorkflowEdge } from '@/types/workflow';
 
 describe('layout', () => {
   describe('layoutNodes', () => {
