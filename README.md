@@ -239,17 +239,16 @@ npm run lint
    git tag v1.0.1
    git push origin v1.0.1
    ```
-   推送以 `v` 开头的标签（如 `v1.0.1`）后，Actions 会自动：构建、跑测试、发布到 npm（若已配置 `NPM_TOKEN`）、创建 GitHub Release。
+   推送以 `v` 开头的标签（如 `v1.0.1`）后，Actions 会自动：构建、跑测试、创建 GitHub Release；若已按下方配置启用，则同时发布到 npm。
 
 ### 配置 NPM 发布（可选）
 
-若需自动发布到 npm，在仓库 **Settings → Secrets and variables → Actions** 中新增 Secret：
+若需自动发布到 npm，在仓库 **Settings → Secrets and variables → Actions** 中配置：
 
-| 名称        | 说明 |
-| ----------- | ---- |
-| `NPM_TOKEN` | npm 访问令牌（[npmjs.com](https://www.npmjs.com) → Account → Access Tokens，建议选 Automation）。 |
+- **Secrets** 新增 `NPM_TOKEN`：npm 访问令牌（[npmjs.com](https://www.npmjs.com) → Account → Access Tokens，建议选 Automation）。
+- **Variables** 新增 `PUBLISH_TO_NPM`，值为 `true`。
 
-未配置 `NPM_TOKEN` 时，流程仍会构建、测试并创建 GitHub Release，仅不会执行 `npm publish`。
+两者都配置后，推送 tag 时才会执行 `npm publish`。未配置或未设 `PUBLISH_TO_NPM` 时，仅构建、测试并创建 GitHub Release。
 
 ## 项目结构
 

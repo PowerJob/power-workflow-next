@@ -1,5 +1,5 @@
-# 推送 v* 标签时：构建、测试、发布 npm 并创建 GitHub Release
-# 使用前请在仓库 Settings → Secrets and variables → Actions 中配置 NPM_TOKEN
+# 推送 v* 标签时：构建、测试、创建 GitHub Release；若启用则发布到 npm
+# 发布 npm：添加 Secret NPM_TOKEN，并添加 Variable PUBLISH_TO_NPM = true
 name: Release
 
 on:
@@ -35,7 +35,7 @@ jobs:
         run: npm run test
 
       - name: Publish to npm
-        if: ${{ secrets.NPM_TOKEN != '' }}
+        if: vars.PUBLISH_TO_NPM == 'true'
         run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
