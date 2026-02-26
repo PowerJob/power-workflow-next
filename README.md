@@ -1,4 +1,4 @@
-# power-workflow-next
+<h1 align="center">power-workflow-next</h1>
 
 <p align="center">
   <img src="https://img.shields.io/npm/v/%40echo009%2Fpower-workflow-next?style=flat-square" alt="npm version" />
@@ -6,21 +6,14 @@
   <img src="https://img.shields.io/badge/TypeScript-5.9-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
   <img src="https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=white" alt="React" />
   <img src="https://img.shields.io/badge/Vite-7-646CFF?style=flat-square&logo=vite&logoColor=white" alt="Vite" />
+  <img src="https://img.shields.io/badge/React%20Flow-12-FF0072?style=flat-square&logo=react&logoColor=white" alt="React Flow" />
+  <img src="https://img.shields.io/badge/Tailwind%20CSS-3-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white" alt="Tailwind CSS" />
+  <img src="https://img.shields.io/badge/Zustand-5-764ABC?style=flat-square" alt="Zustand" />
+  <img src="https://img.shields.io/badge/Dagre-0.8-000000?style=flat-square" alt="Dagre" />
 </p>
 
-基于 React Flow 的 PowerJob 工作流可视化组件，用于替代基于 @antv/g6 的旧版工作流编辑器。
+<p align="center">基于 React Flow 的 PowerJob 工作流可视化组件，用于替代基于 @antv/g6 的旧版工作流编辑器。</p>
 
-## 技术栈
-
-<p align="left">
-  <img src="https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=white" alt="React" />
-  <img src="https://img.shields.io/badge/TypeScript-5.9-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
-  <img src="https://img.shields.io/badge/Vite-7-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" />
-  <img src="https://img.shields.io/badge/React%20Flow-12-FF0072?style=for-the-badge&logo=react&logoColor=white" alt="React Flow" />
-  <img src="https://img.shields.io/badge/Tailwind%20CSS-3-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS" />
-  <img src="https://img.shields.io/badge/Zustand-5-764ABC?style=for-the-badge" alt="Zustand" />
-  <img src="https://img.shields.io/badge/Dagre-0.8-000000?style=for-the-badge" alt="Dagre" />
-</p>
 
 ## 特性
 
@@ -263,10 +256,3 @@ power-workflow-next/
 └── tsconfig.json
 ```
 
-## License
-
-MIT
-
----
-
-作者：Echo009
