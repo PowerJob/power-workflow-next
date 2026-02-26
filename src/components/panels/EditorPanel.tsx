@@ -269,7 +269,7 @@ export const EditorPanel = forwardRef<EditorPanelRef, EditorPanelProps>(
           aria-modal="true"
           aria-labelledby="editor-panel-title"
           className={clsx(
-            'relative z-10 w-full max-w-[480px] max-h-[85vh] flex flex-col',
+            'relative z-10 w-full max-w-lg max-h-[70vh] flex flex-col',
             'bg-white rounded-xl shadow-2xl border border-gray-200/80',
             'transition-[transform,opacity] duration-200 ease-out',
             open ? 'scale-100 opacity-100' : 'scale-[0.98] opacity-0',
