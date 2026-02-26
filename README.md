@@ -224,6 +224,33 @@ npm run typecheck
 npm run lint
 ```
 
+## 发布
+
+本项目使用 GitHub Actions 做自动发布，推送版本标签即可触发。
+
+### 发布步骤
+
+1. **更新版本号**（按需选一种）  
+   - 手动改 `package.json` 里的 `version`  
+   - 或使用 `npm version patch|minor|major`（会打 tag，注意与下面步骤合并）
+
+2. **打标签并推送**  
+   ```bash
+   git tag v1.0.1
+   git push origin v1.0.1
+   ```
+   推送以 `v` 开头的标签（如 `v1.0.1`）后，Actions 会自动：构建、跑测试、发布到 npm（若已配置 `NPM_TOKEN`）、创建 GitHub Release。
+
+### 配置 NPM 发布（可选）
+
+若需自动发布到 npm，在仓库 **Settings → Secrets and variables → Actions** 中新增 Secret：
+
+| 名称        | 说明 |
+| ----------- | ---- |
+| `NPM_TOKEN` | npm 访问令牌（[npmjs.com](https://www.npmjs.com) → Account → Access Tokens，建议选 Automation）。 |
+
+未配置 `NPM_TOKEN` 时，流程仍会构建、测试并创建 GitHub Release，仅不会执行 `npm publish`。
+
 ## 项目结构
 
 ```
