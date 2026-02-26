@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { Handle, Position, type HandleProps } from '@xyflow/react';
+import { Handle, type HandleProps } from '@xyflow/react';
 import { clsx } from 'clsx';
 
 /** 锚点可点击/拖拽的命中区域边长（像素），视觉圆点保持 8px */
