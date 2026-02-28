@@ -64,7 +64,7 @@ function App() {
     [setEdges],
   );
 
-  const handleNodeClick = useCallback((_: ReactMouseEvent, node: WorkflowNode) => {
+  const handleNodeDoubleClick = useCallback((_: ReactMouseEvent, node: WorkflowNode) => {
     setSelectedNodeId(node.id);
   }, []);
 
@@ -92,7 +92,7 @@ function App() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
-        onNodeClick={handleNodeClick}
+        onNodeDoubleClick={handleNodeDoubleClick}
         onPaneClick={handlePaneClick}
         mode="edit"
       />

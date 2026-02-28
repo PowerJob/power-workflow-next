@@ -116,7 +116,7 @@ const PlaygroundInner = () => {
 
   const editingNode = selectedNodeId ? nodes.find((n) => n.id === selectedNodeId) ?? null : null;
 
-  const handleNodeClick = useCallback(
+  const handleNodeDoubleClick = useCallback(
     (_: ReactMouseEvent, node: WorkflowNode) => {
       if (mode === 'edit') setSelectedNodeId(node.id);
     },
@@ -365,7 +365,7 @@ const PlaygroundInner = () => {
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
-          onNodeClick={handleNodeClick}
+          onNodeDoubleClick={handleNodeDoubleClick}
           onPaneClick={handlePaneClick}
           mode={mode}
           defaultLocale={locale}
