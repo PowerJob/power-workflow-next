@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { FormGroup, TextInput, Toggle, CodeEditor } from '.';
 import { WorkflowNodeData } from '../../../types/workflow';
 import { useLocale } from '../../../hooks/useLocale';
-import { ValidationRule, nodeName, condition } from '../../../utils/validation';
+import { ValidationRule, nodeName } from '../../../utils/validation';
 
 interface DecisionNodeFormProps {
   data: WorkflowNodeData;
@@ -18,7 +18,6 @@ interface FormData {
 
 const validationRules: Record<string, ValidationRule[]> = {
   label: [{ validator: nodeName }],
-  condition: [{ validator: condition }],
 };
 
 export const DecisionNodeForm = ({ data, onChange, onValidationChange }: DecisionNodeFormProps) => {
@@ -112,19 +111,12 @@ export const DecisionNodeForm = ({ data, onChange, onValidationChange }: Decisio
         />
       </FormGroup>
 
-      <FormGroup
-        label={t('workflow.panel.condition')}
-        required
-        error={touched.condition ? errors.condition : undefined}
-      >
+      <FormGroup label={t('workflow.panel.condition')}>
         <CodeEditor
           value={formData.condition}
           onChange={(value) => handleChange('condition', value)}
-          onBlur={() => handleBlur('condition')}
-          placeholder={t('workflow.panel.conditionPlaceholder')}
           height={120}
           showLineNumbers={false}
-          error={!!errors.condition && touched.condition}
         />
         <p className="mt-1 text-xs text-gray-400">{t('workflow.panel.conditionHint')}</p>
       </FormGroup>
