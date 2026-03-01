@@ -13,6 +13,8 @@ export const EDGE_STROKE = {
   propertyTrue: '#52C41A',
   /** 判断节点分支 property=false（不通过） */
   propertyFalse: '#EF4444',
+  /** 已执行路径（视图模式）：绿色 */
+  executed: '#52C41A',
 } as const;
 
 /** 未执行路径边线虚线样式 */
