@@ -22,6 +22,7 @@ interface DecisionNodeProps extends NodeProps<WorkflowNode> {
 const DecisionNode = ({ data, selected, mode = 'edit' }: DecisionNodeProps) => {
   const { t } = useLocale();
   const label = data.label || t('workflow.node.decision');
+  const isView = mode === 'view';
   const sideHandleType = mode === 'edit' ? 'source' : 'target';
   const statusStyles = getNodeStatusTone(data.status);
   const statusText = getNodeStatusText(data.status, t);
@@ -52,7 +53,7 @@ const DecisionNode = ({ data, selected, mode = 'edit' }: DecisionNodeProps) => {
           isDisabled ? 'border-dashed' : 'border-solid',
           !isDisabled && statusStyles.border,
           selected && 'ring-2 ring-blue-200 shadow-md',
-          !selected && !isDisabled && 'hover:border-blue-300',
+          !selected && !isView && !isDisabled && 'hover:border-blue-300',
           isRunning && 'node-running',
         )}
       >
