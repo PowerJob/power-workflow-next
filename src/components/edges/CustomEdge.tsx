@@ -7,13 +7,21 @@ import {
   useReactFlow,
   Position,
 } from '@xyflow/react';
-import { WorkflowEdge, WorkflowEdgeData, NodeType } from '../../types/workflow';
+import { WorkflowEdge, WorkflowEdgeData, NodeType, NodeStatus } from '../../types/workflow';
 import { EDGE_STROKE, EDGE_STROKE_DASHARRAY_DISABLED } from '../../constants/edgeColors';
 import { clsx } from 'clsx';
 
 type PropertyType = '' | 'true' | 'false';
 /** 边线相对锚点中心的偏移（像素），越小边越贴近锚点 */
 const ANCHOR_GAP = 2;
+
+/** 判断节点状态是否为终态（已执行完成） */
+const isTerminalStatus = (status?: NodeStatus): boolean => {
+  return status === NodeStatus.SUCCESS ||
+         status === NodeStatus.FAILED ||
+         status === NodeStatus.STOPPED ||
+         status === NodeStatus.CANCELED;
+};
 
 const offsetFromAnchor = (x: number, y: number, position: Position | undefined, gap: number) => {
   switch (position) {
@@ -69,17 +77,25 @@ const CustomEdge = ({
   /** 未执行路径（如判断节点未选中分支）：置灰 + 虚线 */
   const isDisabledEdge = data?.enable === false;
 
+  /** 视图模式：根据 source 节点终态判断是否已执行 */
+  const sourceNodeData = sourceNode?.data;
+  const isExecuted = mode === 'view' &&
+                     isTerminalStatus(sourceNodeData?.status) &&
+                     !isDisabledEdge;
+
   const strokeColor = isDisabledEdge
     ? EDGE_STROKE.disabled
-    : !isFromDecisionNode
-      ? (selected ? EDGE_STROKE.selected : EDGE_STROKE.default)
-      : selected
-        ? EDGE_STROKE.selected
-        : isTrue
-          ? EDGE_STROKE.propertyTrue
-          : isFalse
-            ? EDGE_STROKE.propertyFalse
-            : EDGE_STROKE.default;
+    : mode === 'view'
+      ? (isExecuted ? EDGE_STROKE.executed : EDGE_STROKE.disabled)
+      : !isFromDecisionNode
+        ? (selected ? EDGE_STROKE.selected : EDGE_STROKE.default)
+        : selected
+          ? EDGE_STROKE.selected
+          : isTrue
+            ? EDGE_STROKE.propertyTrue
+            : isFalse
+              ? EDGE_STROKE.propertyFalse
+              : EDGE_STROKE.default;
   const strokeWidth = selected ? 2.5 : 2;
   const edgeStyle = {
     ...style,
