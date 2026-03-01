@@ -134,6 +134,8 @@ const WorkflowCanvasInner = ({
   fitView: fitViewProp,
   isValidConnection: userIsValidConnection,
   defaultLocale: _defaultLocale,
+  onNodeDataChange: _onNodeDataChange,
+  onValidationError: _onValidationError,
   ...props
 }: WorkflowNextProps) => {
   const { t } = useLocale();
