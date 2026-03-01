@@ -19,6 +19,7 @@ import { CustomEdge } from '../edges';
 import { Toolbar } from '../toolbar';
 import { WorkflowMinimap } from '../common/WorkflowMinimap';
 import { WorkflowNextProps, NodeType, type WorkflowNode, type WorkflowEdge, type WorkflowEdgeData } from '../../types/workflow';
+import { EDGE_STROKE } from '../../constants/edgeColors';
 import { useLocale } from '../../hooks/useLocale';
 import { LocaleProvider } from '../../contexts/LocaleContext';
 import type { Connection } from '@xyflow/react';
@@ -146,18 +147,21 @@ const WorkflowCanvasInner = ({
   }, [safeEdges]);
   const edgesWithMarkerColor = useMemo(() => {
     const getEdgeStrokeColor = (edge: WorkflowEdge) => {
+      const edgeData = edge.data as WorkflowEdgeData | undefined;
+      if (edgeData?.enable === false) return EDGE_STROKE.disabled;
+
       const sourceNode = safeNodes.find((node) => node.id === edge.source);
       const isFromDecisionNode = sourceNode?.data?.type === NodeType.DECISION;
-      const property = ((edge.data as WorkflowEdgeData | undefined)?.property ?? '') as '' | 'true' | 'false';
+      const property = (edgeData?.property ?? '') as '' | 'true' | 'false';
       const isTrue = property === 'true';
       const isFalse = property === 'false';
       const isSelected = !!edge.selected;
 
-      if (!isFromDecisionNode) return isSelected ? '#3B82F6' : '#94A3B8';
-      if (isSelected) return '#3B82F6';
-      if (isTrue) return '#52C41A';
-      if (isFalse) return '#EF4444';
-      return '#94A3B8';
+      if (!isFromDecisionNode) return isSelected ? EDGE_STROKE.selected : EDGE_STROKE.default;
+      if (isSelected) return EDGE_STROKE.selected;
+      if (isTrue) return EDGE_STROKE.propertyTrue;
+      if (isFalse) return EDGE_STROKE.propertyFalse;
+      return EDGE_STROKE.default;
     };
 
     return safeEdges.map((edge) => {

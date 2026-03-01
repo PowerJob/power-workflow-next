@@ -8,6 +8,7 @@ import {
   Position,
 } from '@xyflow/react';
 import { WorkflowEdge, WorkflowEdgeData, NodeType } from '../../types/workflow';
+import { EDGE_STROKE, EDGE_STROKE_DASHARRAY_DISABLED } from '../../constants/edgeColors';
 import { clsx } from 'clsx';
 
 type PropertyType = '' | 'true' | 'false';
@@ -65,20 +66,26 @@ const CustomEdge = ({
   const isFalse = property === 'false';
   const hasProperty = isTrue || isFalse;
 
-  const strokeColor = !isFromDecisionNode
-    ? (selected ? '#3B82F6' : '#94A3B8')
-    : selected
-      ? '#3B82F6'
-      : isTrue
-        ? '#52C41A'
-        : isFalse
-          ? '#EF4444'
-          : '#94A3B8';
+  /** 未执行路径（如判断节点未选中分支）：置灰 + 虚线 */
+  const isDisabledEdge = data?.enable === false;
+
+  const strokeColor = isDisabledEdge
+    ? EDGE_STROKE.disabled
+    : !isFromDecisionNode
+      ? (selected ? EDGE_STROKE.selected : EDGE_STROKE.default)
+      : selected
+        ? EDGE_STROKE.selected
+        : isTrue
+          ? EDGE_STROKE.propertyTrue
+          : isFalse
+            ? EDGE_STROKE.propertyFalse
+            : EDGE_STROKE.default;
   const strokeWidth = selected ? 2.5 : 2;
   const edgeStyle = {
     ...style,
     strokeWidth,
     stroke: strokeColor,
+    ...(isDisabledEdge && { strokeDasharray: EDGE_STROKE_DASHARRAY_DISABLED }),
   };
 
   const sourcePoint = offsetFromAnchor(sourceX, sourceY, sourcePosition, ANCHOR_GAP);

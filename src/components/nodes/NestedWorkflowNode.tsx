@@ -100,7 +100,7 @@ const NestedWorkflowNode = ({ data, selected, mode = 'edit' }: NestedWorkflowNod
       />
     ) : (
       <div className="text-xs text-gray-700">
-        <span className="text-gray-400">实例 ID：</span>
+        <span className="text-gray-400">ID：</span>
         <span className="font-mono break-all">{data.instanceId}</span>
       </div>
     );

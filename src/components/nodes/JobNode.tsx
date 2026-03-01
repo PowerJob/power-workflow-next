@@ -106,7 +106,7 @@ const JobNode = ({ data, selected, mode = 'edit' }: JobNodeProps) => {
       />
     ) : (
       <div className="text-xs text-gray-700">
-        <span className="text-gray-400">实例 ID：</span>
+        <span className="text-gray-400">ID：</span>
         <span className="font-mono break-all">{data.instanceId}</span>
       </div>
     );

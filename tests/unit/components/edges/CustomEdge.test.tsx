@@ -4,6 +4,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import CustomEdge from '@/components/edges/CustomEdge';
 import { LocaleProvider } from '@/contexts/LocaleContext';
 import { NodeType } from '@/types/workflow';
+import { EDGE_STROKE } from '@/constants/edgeColors';
 
 const mockGetNodeReturn = vi.hoisted(() => ({ current: undefined as { data: { type: string } } | undefined }));
 
@@ -54,13 +55,13 @@ describe('CustomEdge', () => {
   it('renders green stroke when property is true', () => {
     const { container } = renderEdge(defaultProps);
     const path = container.querySelector('.react-flow__edge-path');
-    expect(path).toHaveStyle({ stroke: '#52C41A' });
+    expect(path).toHaveStyle({ stroke: EDGE_STROKE.propertyTrue });
   });
 
   it('renders red stroke when property is false', () => {
     const { container } = renderEdge({ ...defaultProps, data: { property: 'false' } });
     const path = container.querySelector('.react-flow__edge-path');
-    expect(path).toHaveStyle({ stroke: '#EF4444' });
+    expect(path).toHaveStyle({ stroke: EDGE_STROKE.propertyFalse });
   });
 
   it('keeps markerEnd attribute on edge path', () => {
@@ -79,7 +80,7 @@ describe('CustomEdge', () => {
       },
     });
     const path = container.querySelector('.react-flow__edge-path');
-    expect(path).toHaveStyle({ stroke: '#52C41A' });
+    expect(path).toHaveStyle({ stroke: EDGE_STROKE.propertyTrue });
     expect(path).toHaveAttribute('marker-end');
   });
 
@@ -87,14 +88,14 @@ describe('CustomEdge', () => {
     mockGetNodeReturn.current = { data: { type: NodeType.DECISION } };
     const { container } = renderEdge(defaultProps);
     const path = container.querySelector('.react-flow__edge-path');
-    expect(path).toHaveStyle({ stroke: '#52C41A' });
+    expect(path).toHaveStyle({ stroke: EDGE_STROKE.propertyTrue });
   });
 
   it('does not render property button and uses neutral stroke when source is not decision node', () => {
     mockGetNodeReturn.current = { data: { type: NodeType.JOB } };
     const { container } = renderEdge({ ...defaultProps, data: { property: 'true' } });
     const path = container.querySelector('.react-flow__edge-path');
-    expect(path).toHaveStyle({ stroke: '#94A3B8' });
+    expect(path).toHaveStyle({ stroke: EDGE_STROKE.default });
     const buttons = container.querySelectorAll('button');
     expect(buttons.length).toBe(0);
   });
@@ -103,7 +104,7 @@ describe('CustomEdge', () => {
     mockGetNodeReturn.current = undefined;
     const { container } = renderEdge(defaultProps);
     const path = container.querySelector('.react-flow__edge-path');
-    expect(path).toHaveStyle({ stroke: '#94A3B8' });
+    expect(path).toHaveStyle({ stroke: EDGE_STROKE.default });
     const buttons = container.querySelectorAll('button');
     expect(buttons.length).toBe(0);
   });

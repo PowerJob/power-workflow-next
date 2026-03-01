@@ -2,6 +2,7 @@ import { render } from '@testing-library/react';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { ConnectionMode, type Connection } from '@xyflow/react';
 import { NodeType } from '@/types/workflow';
+import { EDGE_STROKE } from '@/constants/edgeColors';
 import WorkflowCanvas from '@/components/WorkflowCanvas';
 
 const mockReactFlowProps = vi.hoisted(() => ({
@@ -67,7 +68,7 @@ describe('WorkflowCanvas marker color', () => {
     );
 
     const props = mockReactFlowProps.current as { edges?: Array<{ markerEnd?: { color?: string } }> } | undefined;
-    expect(props?.edges?.[0]?.markerEnd?.color).toBe('#52C41A');
+    expect(props?.edges?.[0]?.markerEnd?.color).toBe(EDGE_STROKE.propertyTrue);
   });
 
   it('preserves reverse drag connection direction before calling onConnect', () => {

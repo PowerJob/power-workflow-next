@@ -68,7 +68,7 @@ export const ExecutionDetails = ({
     <div className="flex flex-col gap-2 min-w-0">
       {instanceId && (
         <div className="grid grid-cols-[36px_1fr] gap-x-2 gap-y-1.5 text-xs">
-          <span className="text-gray-400 flex-shrink-0">实例 ID</span>
+          <span className="text-gray-400 flex-shrink-0">ID</span>
           <span className="font-mono text-gray-900 text-right min-w-0 break-all">{instanceId}</span>
         </div>
       )}
