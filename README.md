@@ -1,6 +1,10 @@
 <h1 align="center">power-workflow-next</h1>
 
 <p align="center">
+  <a href="./README.md">English</a> | <a href="./README.zh-CN.md">简体中文</a>
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/npm/v/%40powerjob%2Fpower-workflow-next?style=flat-square" alt="npm version" />
   <img src="https://img.shields.io/npm/l/%40powerjob%2Fpower-workflow-next?style=flat-square" alt="license (Apache-2.0)" />
   <img src="https://img.shields.io/badge/TypeScript-5.9-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
@@ -12,30 +16,34 @@
   <img src="https://img.shields.io/badge/Dagre-0.8-000000?style=flat-square" alt="Dagre" />
 </p>
 
-<p align="center">基于 React Flow 的 PowerJob 工作流可视化组件，用于替代基于 @antv/g6 的旧版工作流编辑器。</p>
+<p align="center">A PowerJob workflow visualization component based on React Flow, designed to replace the legacy @antv/g6-based workflow editor.</p>
 
 
-## 特性
+<p align="center">
+  <img src="./docs/assets/playground-example.png" alt="playground example" width="69%" />
+</p>
 
-- **三种节点类型**：任务节点（JOB）、判断节点（DECISION）、嵌套工作流节点（NESTED_WORKFLOW）
-- **画布能力**：拖拽节点、连线、编辑/查看模式切换、缩放限制（25%–200%）、连接吸附方向（水平/垂直）
-- **连线样式**：基础灰色连线、分支线（true/false 绿色/红色 + Y/N 标签）、选中高亮
-- **编辑面板**：右侧滑入面板、表单校验、保存确认
-- **自动布局**：Dagre 层次布局，支持横向/纵向
-- **撤销重做**：支持可配置步数历史记录（默认 50 步）
-- **右键菜单**：添加节点、复制粘贴
-- **快捷键**：Delete、Ctrl+Z/Y、Ctrl+C/V、Ctrl+A、Ctrl+D、Escape
-- **视图模式**：节点状态展示、运行动画、执行详情 Tooltip
-- **增强功能**：小地图导航、节点搜索筛选、可选内嵌工具栏
-- **国际化**：中英文（zh-CN / en-US），默认中文
+## Features
 
-## 安装
+- **Three Node Types**: Task node (JOB), Decision node (DECISION), Nested workflow node (NESTED_WORKFLOW)
+- **Canvas Capabilities**: Drag nodes, connect edges, edit/view mode toggle, zoom limits (25%–200%), connection snap direction (horizontal/vertical)
+- **Edge Styles**: Basic gray edges, branch edges (true/false green/red + Y/N labels), selection highlight
+- **Edit Panel**: Right-side slide-in panel, form validation, save confirmation
+- **Auto Layout**: Dagre hierarchical layout, supports horizontal/vertical orientation
+- **Undo/Redo**: Configurable history steps (default 50 steps)
+- **Context Menu**: Add nodes, copy/paste
+- **Keyboard Shortcuts**: Delete, Ctrl+Z/Y, Ctrl+C/V, Ctrl+A, Ctrl+D, Escape
+- **View Mode**: Node status display, running animation, execution details tooltip
+- **Enhanced Features**: Minimap navigation, node search/filter, optional embedded toolbar
+- **Internationalization**: Chinese/English (zh-CN / en-US), defaults to Chinese
+
+## Installation
 
 ```bash
 npm install power-workflow-next
 ```
 
-## 快速开始
+## Quick Start
 
 ```tsx
 import {
@@ -53,7 +61,7 @@ const initialNodes = [
     type: 'JOB',
     position: { x: 0, y: 0 },
     data: {
-      label: '数据清洗任务',
+      label: 'Data Cleaning Task',
       type: NodeType.JOB,
       jobId: 1001,
       enable: true,
@@ -68,40 +76,40 @@ function App() {
 
   return (
     <div className="w-full h-screen">
-      <WorkflowCanvas nodes={nodes} edges={edges} mode="edit" defaultLocale="zh-CN" />
+      <WorkflowCanvas nodes={nodes} edges={edges} mode="edit" defaultLocale="en-US" />
     </div>
   );
 }
 ```
 
-## API 文档
+## API Documentation
 
 ### WorkflowCanvas Props
 
-组件接受 `WorkflowNextProps`，继承 React Flow 的常用画布能力，主要属性如下：
+The component accepts `WorkflowNextProps`, inheriting common React Flow canvas capabilities:
 
-| 属性                 | 类型                     | 默认值    | 说明                   |
-| -------------------- | ------------------------ | --------- | ---------------------- |
-| `nodes`              | `WorkflowNode[]`         | `[]`      | 节点数据               |
-| `edges`              | `WorkflowEdge[]`         | `[]`      | 连线数据               |
-| `mode`               | `'edit' \| 'view'`       | `'edit'`  | 编辑/视图模式          |
-| `defaultLocale`      | `'zh-CN' \| 'en-US'`    | `'zh-CN'` | 默认语言               |
-| `onNodesChange`      | `function`               | -         | 节点变化回调           |
-| `onEdgesChange`      | `function`               | -         | 连线变化回调           |
-| `onConnect`          | `function`               | -         | 连线连接回调           |
-| `onNodeDataChange`   | `function`               | -         | 节点数据变化回调       |
-| `onValidationError`  | `(errors: unknown[]) => void` | -   | 校验失败回调           |
-| `connectSnapDirection` | `'horizontal' \| 'vertical'` | -     | 连接吸附方向           |
-| `showToolbar`        | `boolean`                | -         | 是否在画布上方显示工具栏 |
-| `jobOptions`         | `WorkflowReferenceOption[]` | -      | 任务下拉选项（编辑面板） |
-| `workflowOptions`    | `WorkflowReferenceOption[]` | -     | 工作流下拉选项（嵌套节点） |
-| `onAutoLayout`       | `function`               | -         | 自动布局回调           |
-| `onAddNode`          | `function`               | -         | 添加节点回调           |
-| `onExport` / `onImport` | `function`            | -         | 导出/导入回调          |
-| `showMinimap` / `onToggleMinimap` | `boolean` / `function` | - | 小地图显示与切换       |
-| `undoableActions`    | `number`                 | `50`      | 撤销历史步数上限       |
+| Property                 | Type                     | Default    | Description                   |
+| ------------------------ | ------------------------ | ---------- | ----------------------------- |
+| `nodes`                  | `WorkflowNode[]`         | `[]`       | Node data                     |
+| `edges`                  | `WorkflowEdge[]`         | `[]`       | Edge data                     |
+| `mode`                   | `'edit' \| 'view'`       | `'edit'`   | Edit/view mode                |
+| `defaultLocale`          | `'zh-CN' \| 'en-US'`    | `'zh-CN'`  | Default language              |
+| `onNodesChange`          | `function`               | -          | Node change callback          |
+| `onEdgesChange`          | `function`               | -          | Edge change callback          |
+| `onConnect`              | `function`               | -          | Connection callback           |
+| `onNodeDataChange`       | `function`               | -          | Node data change callback     |
+| `onValidationError`      | `(errors: unknown[]) => void` | -   | Validation error callback     |
+| `connectSnapDirection`   | `'horizontal' \| 'vertical'` | -     | Connection snap direction     |
+| `showToolbar`            | `boolean`                | -          | Show toolbar above canvas     |
+| `jobOptions`             | `WorkflowReferenceOption[]` | -      | Job dropdown options (edit panel) |
+| `workflowOptions`        | `WorkflowReferenceOption[]` | -     | Workflow dropdown options (nested node) |
+| `onAutoLayout`           | `function`               | -          | Auto layout callback          |
+| `onAddNode`              | `function`               | -          | Add node callback             |
+| `onExport` / `onImport`  | `function`               | -          | Export/import callback        |
+| `showMinimap` / `onToggleMinimap` | `boolean` / `function` | - | Minimap display and toggle    |
+| `undoableActions`        | `number`                 | `50`       | Undo history limit            |
 
-### 数据结构
+### Data Structures
 
 #### WorkflowNodeData
 
@@ -121,9 +129,9 @@ interface WorkflowNodeData {
   condition?: string;
   targetWorkflowId?: string | number;
 
-  /** 判断节点执行结果，仅 DECISION 节点在运行后存在 */
+  /** Decision node execution result, only exists for DECISION nodes after running */
   result?: 'true' | 'false';
-  /** 因控制节点而被禁用，仅视图/运行态 */
+  /** Disabled by control node, only in view/run mode */
   disableByControlNode?: boolean;
 }
 ```
@@ -151,40 +159,40 @@ enum NodeStatus {
 }
 ```
 
-### 工具函数
+### Utility Functions
 
 ```typescript
 import {
-  layoutNodes,           // Dagre 自动布局
-  detectCycle,           // 循环依赖检测
-  checkDecisionNodeExits, // 判断节点出口校验
-  exportToJSON,          // 导出为 JSON
-  importFromJSON,        // 从 JSON 导入
-  generateNodeId,        // 生成节点 ID
-  generateEdgeId,        // 生成连线 ID
-  createDefaultNodeData, // 创建默认节点数据
-  deepClone,             // 深拷贝
+  layoutNodes,           // Dagre auto layout
+  detectCycle,           // Cycle dependency detection
+  checkDecisionNodeExits, // Decision node exit validation
+  exportToJSON,          // Export to JSON
+  importFromJSON,        // Import from JSON
+  generateNodeId,        // Generate node ID
+  generateEdgeId,        // Generate edge ID
+  createDefaultNodeData, // Create default node data
+  deepClone,             // Deep clone
 } from 'power-workflow-next';
 
 import {
-  assignOptimalHandles,   // 分配最优连接把手
+  assignOptimalHandles,   // Assign optimal connection handles
   getOptimalHandlesForEdge,
   getSnapHandlesForEdge,
   normalizeConnectionDirection,
 } from 'power-workflow-next';
 
-// 自动布局
+// Auto layout
 const newNodes = layoutNodes(nodes, edges, { direction: 'horizontal' });
 
-// 循环检测
+// Cycle detection
 const cycleError = detectCycle(nodes, edges);
 
-// 导出 / 导入
+// Export / Import
 const json = exportToJSON(nodes, edges);
 const { success, data, error } = importFromJSON(jsonString);
 ```
 
-### 校验器
+### Validators
 
 ```typescript
 import {
@@ -202,83 +210,38 @@ import {
 } from 'power-workflow-next';
 ```
 
-## 开发
-
-```bash
-# 安装依赖
-npm install
-
-# 启动开发服务器（运行 playground 演示）
-npm run dev
-
-# 构建库
-npm run build:lib
-
-# 运行测试
-npm run test
-
-# 类型检查
-npm run typecheck
-
-# 代码检查
-npm run lint
-```
-
-## 发布
-
-本项目使用 GitHub Actions 做自动发布，推送版本标签即可触发。
-
-### 发布步骤
-
-1. **更新版本号**（按需选一种）  
-   - 手动改 `package.json` 里的 `version`  
-   - 或使用 `npm version patch|minor|major`（会打 tag，注意与下面步骤合并）
-
-2. **打标签并推送**  
-   ```bash
-   git tag v1.0.1
-   git push origin v1.0.1
-   ```
-   推送以 `v` 开头的标签（如 `v1.0.1`）后，Actions 会自动：构建、跑测试、创建 GitHub Release；若已按下方配置启用，则同时发布到 npm。
-
-### 配置 NPM 发布（可选）
-
-若需自动发布到 npm，在仓库 **Settings → Secrets and variables → Actions** 中配置：
-
-- **Secrets** 新增 `NPM_TOKEN`：npm 访问令牌（[npmjs.com](https://www.npmjs.com) → Account → Access Tokens，建议选 Automation）。
-- **Variables** 新增 `PUBLISH_TO_NPM`，值为 `true`。
-
-两者都配置后，推送 tag 时才会执行 `npm publish`。未配置或未设 `PUBLISH_TO_NPM` 时，仅构建、测试并创建 GitHub Release。
-
-## 项目结构
+## Project Structure
 
 ```
 power-workflow-next/
 ├── src/
 │   ├── components/
-│   │   ├── WorkflowCanvas/   # 画布主组件
-│   │   ├── nodes/            # 节点组件（JobNode、DecisionNode、NestedWorkflowNode）
-│   │   ├── edges/            # 连线组件
-│   │   ├── panels/           # 编辑面板与表单（EditorPanel、*Form、表单控件）
-│   │   ├── toolbar/          # 工具栏
-│   │   └── common/           # 通用组件（小地图、Tooltip、右键菜单等）
-│   ├── contexts/             # React 上下文（LocaleContext）
-│   ├── hooks/                # 自定义 Hooks（快捷键、搜索、国际化）
-│   ├── stores/               # Zustand 状态管理
-│   ├── utils/                # 工具函数（布局、校验、工作流、边把手）
-│   ├── types/                # TypeScript 类型
-│   ├── locales/              # 国际化
-│   └── styles/               # 样式文件
+│   │   ├── WorkflowCanvas/   # Main canvas component
+│   │   ├── nodes/            # Node components (JobNode, DecisionNode, NestedWorkflowNode)
+│   │   ├── edges/            # Edge components
+│   │   ├── panels/           # Edit panels and forms (EditorPanel, *Form, form controls)
+│   │   ├── toolbar/          # Toolbar
+│   │   └── common/           # Common components (minimap, tooltip, context menu, etc.)
+│   ├── contexts/             # React contexts (LocaleContext)
+│   ├── hooks/                # Custom hooks (shortcuts, search, i18n)
+│   ├── stores/               # Zustand state management
+│   ├── utils/                # Utility functions (layout, validation, workflow, edge handles)
+│   ├── types/                # TypeScript types
+│   ├── locales/              # Internationalization
+│   └── styles/               # Style files
 ├── tests/
-│   ├── setup.ts              # 测试环境配置
-│   └── unit/                 # 单元测试
-│       ├── components/       # 组件测试（含 nodes、edges）
-│       ├── stores/           # 状态管理测试
-│       └── utils/            # 工具函数测试
-├── playground/               # 本地演示与调试（npm run dev 入口）
-├── docs/                     # 文档与设计说明
+│   ├── setup.ts              # Test environment config
+│   └── unit/                 # Unit tests
+│       ├── components/       # Component tests (nodes, edges)
+│       ├── stores/           # State management tests
+│       └── utils/            # Utility function tests
+├── playground/               # Local demo and debugging
+├── docs/                     # Documentation and design notes
 ├── package.json
 ├── vite.config.ts
 └── tsconfig.json
 ```
 
+## License
+
+Apache-2.0
