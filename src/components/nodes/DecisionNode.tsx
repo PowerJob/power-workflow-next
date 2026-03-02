@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { Position, NodeProps } from '@xyflow/react';
 import WorkflowHandle from './WorkflowHandle';
-import { WorkflowNode, NodeStatus } from '../../types/workflow';
+import { WorkflowNode, NodeStatus } from '@/types';
 import { useLocale } from '../../hooks/useLocale';
 import { clsx } from 'clsx';
 import { Split } from 'lucide-react';

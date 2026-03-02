@@ -1,5 +1,5 @@
 import dagre from 'dagre';
-import { WorkflowNode, WorkflowEdge, NodeType } from '../types/workflow';
+import { WorkflowNode, WorkflowEdge, NodeType } from '@/types';
 
 interface LayoutOptions {
   direction?: 'horizontal' | 'vertical';

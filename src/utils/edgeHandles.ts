@@ -2,7 +2,7 @@
  * 根据布局方向为边计算 sourceHandle / targetHandle：横向 right→left，纵向 bottom→top
  * @author Echo009
  */
-import { WorkflowNode, WorkflowEdge } from '../types/workflow';
+import { WorkflowNode, WorkflowEdge } from '@/types';
 import type { Connection } from '@xyflow/react';
 
 type SourceHandleId = 'right' | 'bottom';

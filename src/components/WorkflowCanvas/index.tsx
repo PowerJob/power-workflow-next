@@ -18,7 +18,7 @@ import { JobNode, DecisionNode, NestedWorkflowNode } from '../nodes';
 import { CustomEdge } from '../edges';
 import { Toolbar } from '../toolbar';
 import { WorkflowMinimap } from '../common/WorkflowMinimap';
-import { WorkflowNextProps, NodeType, NodeStatus, type WorkflowNode, type WorkflowEdge, type WorkflowEdgeData } from '../../types/workflow';
+import { WorkflowNextProps, NodeType, NodeStatus, type WorkflowNode, type WorkflowEdge, type WorkflowEdgeData } from '@/types';
 import { EDGE_STROKE } from '../../constants/edgeColors';
 import { useLocale } from '../../hooks/useLocale';
 import { LocaleProvider } from '../../contexts/LocaleContext';
@@ -59,7 +59,7 @@ interface CanvasToolbarProps {
   onUndo?: () => void;
   onRedo?: () => void;
   onAutoLayout?: (direction: 'horizontal' | 'vertical') => void;
-  onAddNode?: (type: import('../../types/workflow').NodeType, position?: { x: number; y: number }) => void;
+  onAddNode?: (type: import('@/types').NodeType, position?: { x: number; y: number }) => void;
   onExport?: () => void;
   onImport?: () => void;
   showMinimap?: boolean;
@@ -400,13 +400,13 @@ const WorkflowCanvasInner = ({
 
   const nodeTypesWithMode = useMemo(
     () => ({
-      [NodeType.JOB]: (props: import('@xyflow/react').NodeProps<import('../../types/workflow').WorkflowNode>) => (
+      [NodeType.JOB]: (props: import('@xyflow/react').NodeProps<import('@/types').WorkflowNode>) => (
         <JobNode {...props} mode={mode} />
       ),
-      [NodeType.DECISION]: (props: import('@xyflow/react').NodeProps<import('../../types/workflow').WorkflowNode>) => (
+      [NodeType.DECISION]: (props: import('@xyflow/react').NodeProps<import('@/types').WorkflowNode>) => (
         <DecisionNode {...props} mode={mode} />
       ),
-      [NodeType.NESTED_WORKFLOW]: (props: import('@xyflow/react').NodeProps<import('../../types/workflow').WorkflowNode>) => (
+      [NodeType.NESTED_WORKFLOW]: (props: import('@xyflow/react').NodeProps<import('@/types').WorkflowNode>) => (
         <NestedWorkflowNode {...props} mode={mode} />
       ),
     }),
@@ -416,7 +416,7 @@ const WorkflowCanvasInner = ({
   const edgeTypesWithActions = useMemo(
     () => ({
       default: (
-        edgeProps: import('@xyflow/react').EdgeProps<import('../../types/workflow').WorkflowEdge>,
+        edgeProps: import('@xyflow/react').EdgeProps<import('@/types').WorkflowEdge>,
       ) => (
         <CustomEdge
           {...edgeProps}
@@ -425,7 +425,7 @@ const WorkflowCanvasInner = ({
         />
       ),
       custom: (
-        edgeProps: import('@xyflow/react').EdgeProps<import('../../types/workflow').WorkflowEdge>,
+        edgeProps: import('@xyflow/react').EdgeProps<import('@/types').WorkflowEdge>,
       ) => (
         <CustomEdge
           {...edgeProps}
@@ -434,7 +434,7 @@ const WorkflowCanvasInner = ({
         />
       ),
       workflow: (
-        edgeProps: import('@xyflow/react').EdgeProps<import('../../types/workflow').WorkflowEdge>,
+        edgeProps: import('@xyflow/react').EdgeProps<import('@/types').WorkflowEdge>,
       ) => (
         <CustomEdge
           {...edgeProps}

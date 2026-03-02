@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { clsx } from 'clsx';
 import { ClipboardList, Split, Layers, X } from 'lucide-react';
-import { WorkflowNodeData, NodeType, WorkflowNode, WorkflowReferenceOption } from '../../types/workflow';
+import { WorkflowNodeData, NodeType, WorkflowNode, WorkflowReferenceOption } from '@/types';
 import { useLocale } from '../../hooks/useLocale';
 import { JobNodeForm, DecisionNodeForm, NestedWorkflowNodeForm } from './forms';
 

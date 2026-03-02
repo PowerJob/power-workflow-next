@@ -7,7 +7,7 @@ import {
   useReactFlow,
   Position,
 } from '@xyflow/react';
-import { WorkflowEdge, WorkflowEdgeData, NodeType, NodeStatus } from '../../types/workflow';
+import { WorkflowEdge, WorkflowEdgeData, NodeType, NodeStatus } from '@/types';
 import { EDGE_STROKE, EDGE_STROKE_DASHARRAY_DISABLED } from '../../constants/edgeColors';
 import { clsx } from 'clsx';
 

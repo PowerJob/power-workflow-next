@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { FormGroup, TextInput, SelectInput, EnableSkipOptions, CodeEditor } from '.';
-import { WorkflowNodeData, WorkflowReferenceOption } from '../../../types/workflow';
+import { WorkflowNodeData, WorkflowReferenceOption } from '@/types';
 import { useLocale } from '../../../hooks/useLocale';
 import { ValidationRule, nodeName } from '../../../utils/validation';
 

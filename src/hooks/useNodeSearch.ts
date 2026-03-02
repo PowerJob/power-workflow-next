@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import { WorkflowNode } from '../types/workflow';
+import { WorkflowNode } from '@/types';
 
 interface UseNodeSearchResult {
   searchQuery: string;

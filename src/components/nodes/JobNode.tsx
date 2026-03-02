@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { Position, NodeProps } from '@xyflow/react';
 import WorkflowHandle from './WorkflowHandle';
 import { ClipboardList, SkipForward } from 'lucide-react';
-import { WorkflowNode, NodeStatus } from '../../types/workflow';
+import { WorkflowNode, NodeStatus } from '@/types';
 import { useLocale } from '../../hooks/useLocale';
 import { clsx } from 'clsx';
 import NodeTooltip from '../common/NodeTooltip';

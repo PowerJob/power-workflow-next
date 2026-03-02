@@ -11,7 +11,7 @@ import {
 } from 'react';
 import { clsx } from 'clsx';
 import { ChevronDown } from 'lucide-react';
-import { WorkflowReferenceOption } from '../../../types/workflow';
+import { WorkflowReferenceOption } from '@/types';
 
 interface SelectInputProps
   extends Omit<

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { ClipboardList, Split, Layers, Clipboard, Trash2 } from 'lucide-react';
 import { clsx } from 'clsx';
-import { NodeType } from '../../types/workflow';
+import { NodeType } from '@/types';
 import { useLocale } from '../../hooks/useLocale';
 
 interface ContextMenuItem {

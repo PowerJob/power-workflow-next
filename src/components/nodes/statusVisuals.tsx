@@ -1,4 +1,4 @@
-import { NodeStatus } from '../../types/workflow';
+import { NodeStatus } from '@/types';
 
 export interface NodeStatusTone {
   bg: string;

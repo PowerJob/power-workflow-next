@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { MiniMap } from '@xyflow/react';
-import { WorkflowNode, NodeStatus } from '../../types/workflow';
+import { WorkflowNode, NodeStatus } from '@/types';
 
 const getNodeColor = (node: WorkflowNode): string => {
   const status = node.data?.status;

@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { ToolbarButton, ToolbarDropdown, DropdownItem } from './ToolbarButton';
 import { useLocale } from '../../hooks/useLocale';
-import { NodeType } from '../../types/workflow';
+import { NodeType } from '@/types';
 
 interface ToolbarProps {
   mode: 'edit' | 'view';

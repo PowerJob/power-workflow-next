@@ -1,4 +1,4 @@
-import { WorkflowNode, WorkflowEdge } from '../types/workflow';
+import { WorkflowNode, WorkflowEdge } from '@/types';
 
 export const detectCycle = (nodes: WorkflowNode[], edges: WorkflowEdge[]): string | null => {
   if (nodes.length === 0 || edges.length === 0) return null;
