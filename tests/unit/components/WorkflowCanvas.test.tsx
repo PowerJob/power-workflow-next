@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { ConnectionMode, type Connection } from '@xyflow/react';
-import { NodeType } from '@/types/workflow';
+import { NodeType, NodeStatus } from '@/types/workflow';
 import { EDGE_STROKE } from '@/constants/edgeColors';
 import WorkflowCanvas from '@/components/WorkflowCanvas';
 
@@ -38,7 +38,7 @@ describe('WorkflowCanvas marker color', () => {
     mockReactFlowProps.current = undefined;
   });
 
-  it('sets markerEnd color for decision edge to match stroke color', () => {
+  it('sets markerEnd color for decision edge to match stroke color in edit mode', () => {
     render(
       <WorkflowCanvas
         nodes={[
@@ -63,12 +63,108 @@ describe('WorkflowCanvas marker color', () => {
             data: { property: 'true' },
           },
         ]}
-        mode="view"
+        mode="edit"
       />,
     );
 
     const props = mockReactFlowProps.current as { edges?: Array<{ markerEnd?: { color?: string } }> } | undefined;
     expect(props?.edges?.[0]?.markerEnd?.color).toBe(EDGE_STROKE.propertyTrue);
+  });
+
+  it('sets markerEnd color to executed when source node is terminal status in view mode', () => {
+    render(
+      <WorkflowCanvas
+        nodes={[
+          {
+            id: 'n1',
+            type: NodeType.JOB,
+            position: { x: 0, y: 0 },
+            data: { label: '任务1', type: NodeType.JOB, status: NodeStatus.SUCCESS },
+          },
+          {
+            id: 'n2',
+            type: NodeType.JOB,
+            position: { x: 200, y: 0 },
+            data: { label: '任务2', type: NodeType.JOB },
+          },
+        ]}
+        edges={[
+          {
+            id: 'e1-2',
+            source: 'n1',
+            target: 'n2',
+          },
+        ]}
+        mode="view"
+      />,
+    );
+
+    const props = mockReactFlowProps.current as { edges?: Array<{ markerEnd?: { color?: string } }> } | undefined;
+    expect(props?.edges?.[0]?.markerEnd?.color).toBe(EDGE_STROKE.executed);
+  });
+
+  it('sets markerEnd color to disabled when source node is not terminal status in view mode', () => {
+    render(
+      <WorkflowCanvas
+        nodes={[
+          {
+            id: 'n1',
+            type: NodeType.JOB,
+            position: { x: 0, y: 0 },
+            data: { label: '任务1', type: NodeType.JOB, status: NodeStatus.RUNNING },
+          },
+          {
+            id: 'n2',
+            type: NodeType.JOB,
+            position: { x: 200, y: 0 },
+            data: { label: '任务2', type: NodeType.JOB },
+          },
+        ]}
+        edges={[
+          {
+            id: 'e1-2',
+            source: 'n1',
+            target: 'n2',
+          },
+        ]}
+        mode="view"
+      />,
+    );
+
+    const props = mockReactFlowProps.current as { edges?: Array<{ markerEnd?: { color?: string } }> } | undefined;
+    expect(props?.edges?.[0]?.markerEnd?.color).toBe(EDGE_STROKE.disabled);
+  });
+
+  it('sets markerEnd color to disabled when source node has no status in view mode', () => {
+    render(
+      <WorkflowCanvas
+        nodes={[
+          {
+            id: 'n1',
+            type: NodeType.JOB,
+            position: { x: 0, y: 0 },
+            data: { label: '任务1', type: NodeType.JOB },
+          },
+          {
+            id: 'n2',
+            type: NodeType.JOB,
+            position: { x: 200, y: 0 },
+            data: { label: '任务2', type: NodeType.JOB },
+          },
+        ]}
+        edges={[
+          {
+            id: 'e1-2',
+            source: 'n1',
+            target: 'n2',
+          },
+        ]}
+        mode="view"
+      />,
+    );
+
+    const props = mockReactFlowProps.current as { edges?: Array<{ markerEnd?: { color?: string } }> } | undefined;
+    expect(props?.edges?.[0]?.markerEnd?.color).toBe(EDGE_STROKE.disabled);
   });
 
   it('preserves reverse drag connection direction before calling onConnect', () => {

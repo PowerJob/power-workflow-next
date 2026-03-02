@@ -18,7 +18,7 @@ import { JobNode, DecisionNode, NestedWorkflowNode } from '../nodes';
 import { CustomEdge } from '../edges';
 import { Toolbar } from '../toolbar';
 import { WorkflowMinimap } from '../common/WorkflowMinimap';
-import { WorkflowNextProps, NodeType, type WorkflowNode, type WorkflowEdge, type WorkflowEdgeData } from '../../types/workflow';
+import { WorkflowNextProps, NodeType, NodeStatus, type WorkflowNode, type WorkflowEdge, type WorkflowEdgeData } from '../../types/workflow';
 import { EDGE_STROKE } from '../../constants/edgeColors';
 import { useLocale } from '../../hooks/useLocale';
 import { LocaleProvider } from '../../contexts/LocaleContext';
@@ -43,6 +43,14 @@ const cloneSnapshot = (snapshot: WorkflowSnapshot): WorkflowSnapshot =>
 
 const isSnapshotEqual = (a: WorkflowSnapshot, b: WorkflowSnapshot): boolean =>
   JSON.stringify(a) === JSON.stringify(b);
+
+/** 判断节点状态是否为终态（已执行完成） */
+const isTerminalStatus = (status?: NodeStatus): boolean => {
+  return status === NodeStatus.SUCCESS ||
+         status === NodeStatus.FAILED ||
+         status === NodeStatus.STOPPED ||
+         status === NodeStatus.CANCELED;
+};
 
 interface CanvasToolbarProps {
   mode: 'edit' | 'view';
@@ -159,6 +167,13 @@ const WorkflowCanvasInner = ({
       const isFalse = property === 'false';
       const isSelected = !!edge.selected;
 
+      // 视图模式：根据 source 节点终态判断是否已执行
+      if (mode === 'view') {
+        const isExecuted = isTerminalStatus(sourceNode?.data?.status);
+        return isExecuted ? EDGE_STROKE.executed : EDGE_STROKE.disabled;
+      }
+
+      // 编辑模式逻辑
       if (!isFromDecisionNode) return isSelected ? EDGE_STROKE.selected : EDGE_STROKE.default;
       if (isSelected) return EDGE_STROKE.selected;
       if (isTrue) return EDGE_STROKE.propertyTrue;
@@ -185,7 +200,7 @@ const WorkflowCanvasInner = ({
         },
       };
     });
-  }, [safeEdges, safeNodes]);
+  }, [safeEdges, safeNodes, mode]);
   const historyLimit = Math.max(1, undoableActions ?? 50);
   const applyingHistoryRef = useRef(false);
   const [history, setHistory] = useState<WorkflowHistoryState>({
