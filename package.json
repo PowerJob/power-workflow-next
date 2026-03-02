@@ -1,5 +1,5 @@
 {
-  "name": "@echo009/power-workflow-next",
+  "name": "@powerjob/power-workflow-next",
   "version": "1.0.2",
   "description": "基于 React Flow 的 PowerJob 工作流可视化组件",
   "keywords": [
@@ -88,10 +88,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/echo009/power-workflow-next.git"
+    "url": "https://github.com/PowerJob/power-workflow-next.git"
   },
   "bugs": {
-    "url": "https://github.com/echo009/power-workflow-next/issues"
+    "url": "https://github.com/PowerJob/power-workflow-next/issues"
   },
-  "homepage": "https://github.com/echo009/power-workflow-next#readme"
+  "homepage": "https://github.com/PowerJob/power-workflow-next#readme"
 }
