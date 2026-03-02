@@ -29,6 +29,7 @@ export default defineConfig(({ mode }) => {
           name: 'PowerWorkflowNext',
           formats: ['es', 'cjs'],
           fileName: (format) => `index.${format === 'es' ? 'mjs' : 'js'}`,
+          cssFileName: 'style',
         },
         rollupOptions: {
           external: ['react', 'react-dom', 'react/jsx-runtime', '@xyflow/react'],

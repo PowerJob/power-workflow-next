@@ -1,3 +1,5 @@
+import './index.css';
+
 export { WorkflowCanvas } from './components/WorkflowCanvas';
 export { default as JobNode } from './components/nodes/JobNode';
 export { default as DecisionNode } from './components/nodes/DecisionNode';

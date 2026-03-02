@@ -78,7 +78,7 @@ const CustomEdge = ({
   const isDisabledEdge = data?.enable === false;
 
   /** 视图模式：根据 source 节点终态判断是否已执行 */
-  const sourceNodeData = sourceNode?.data;
+  const sourceNodeData = sourceNode?.data as { status?: NodeStatus } | undefined;
   const isExecuted = mode === 'view' &&
                      isTerminalStatus(sourceNodeData?.status) &&
                      !isDisabledEdge;
