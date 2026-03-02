@@ -1,6 +1,6 @@
 {
   "name": "@powerjob/power-workflow-next",
-  "version": "1.0.2",
+  "version": "1.0.0",
   "description": "基于 React Flow 的 PowerJob 工作流可视化组件",
   "keywords": [
     "workflow",
@@ -12,7 +12,7 @@
     "workflow-editor"
   ],
   "author": "Echo009",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

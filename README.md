@@ -2,7 +2,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/npm/v/%40powerjob%2Fpower-workflow-next?style=flat-square" alt="npm version" />
-  <img src="https://img.shields.io/npm/l/%40powerjob%2Fpower-workflow-next?style=flat-square" alt="license" />
+  <img src="https://img.shields.io/npm/l/%40powerjob%2Fpower-workflow-next?style=flat-square" alt="license (Apache-2.0)" />
   <img src="https://img.shields.io/badge/TypeScript-5.9-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
   <img src="https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=white" alt="React" />
   <img src="https://img.shields.io/badge/Vite-7-646CFF?style=flat-square&logo=vite&logoColor=white" alt="Vite" />
