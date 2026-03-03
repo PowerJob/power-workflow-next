@@ -98,11 +98,11 @@ const JobNode = ({ data, selected, mode = 'edit' }: JobNodeProps) => {
   if (isView && (hasExecutionInfo || data.instanceId)) {
     const tooltipContent = hasExecutionInfo ? (
       <ExecutionDetails
-        duration={data.execution?.duration}
         startTime={data.execution?.startTime}
         endTime={data.execution?.endTime}
         error={data.execution?.error}
         instanceId={data.instanceId}
+        status={data.status}
       />
     ) : (
       <div className="text-xs text-gray-700">
