@@ -1,6 +1,6 @@
 {
   "name": "@powerjob/power-workflow-next",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "基于 React Flow 的 PowerJob 工作流可视化组件",
   "keywords": [
     "workflow",
